@@ -171,24 +171,45 @@
             background-color: #145a9d;
         }
 
+        /* Color classes for row labels */
         .colored-text-1 {
-            color: #3aa832;
+            color: #ff0000; /* Red */
         }
 
         .colored-text-2 {
-            color: #03cafc;
+            color: #ff7f00; /* Orange */
         }
 
         .colored-text-3 {
-            color: #fc8803;
+            color: #ffff00; /* Yellow */
         }
 
         .colored-text-4 {
-            color: #f003fc;
+            color: #00ff00; /* Green */
         }
 
         .colored-text-5 {
-            color: #fce703;
+            color: #0000ff; /* Blue */
+        }
+
+        .colored-text-6 {
+            color: #4b0082; /* Indigo */
+        }
+
+        .colored-text-7 {
+            color: #8a2be2; /* Violet */
+        }
+
+        .colored-text-8 {
+            color: #ff69b4; /* Pink */
+        }
+
+        .colored-text-9 {
+            color: #87ceeb; /* Light Blue */
+        }
+
+        .colored-text-10 {
+            color: #32cd32; /* Light Green */
         }
 
         .delete-button {
@@ -282,7 +303,12 @@
         let currentRowIndex = -1;
         let selectedColumns = [0, 1, 2];
 
-        const colors = ['colored-text-1', 'colored-text-2', 'colored-text-3', 'colored-text-4', 'colored-text-5'];
+        const colors = [
+            'colored-text-1', 'colored-text-2', 'colored-text-3',
+            'colored-text-4', 'colored-text-5', 'colored-text-6',
+            'colored-text-7', 'colored-text-8', 'colored-text-9',
+            'colored-text-10'
+        ];
 
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -379,6 +405,7 @@
                 textarea.value = value;
                 textarea.oninput = function() {
                     parsedData[currentRowIndex][colIndex] = textarea.value; // Auto-save on input
+                    displayRows(); // Update the row labels immediately after editing
                 };
                 form.appendChild(label);
                 form.appendChild(textarea);
