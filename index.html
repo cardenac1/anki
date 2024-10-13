@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV Parser & Editor</title>
+    <title>List</title>
     <style>
         body {
             background-color: #121212;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            margin: auto;
+            padding: 50px;
         }
 
         .container {
             width: 100%;
             max-width: 900px;
             margin: auto;
-            padding: 20px;
+            padding: 50px;
         }
 
         h1 {
@@ -161,26 +161,25 @@
         #exportButton:hover {
             background-color: #145a9d;
         }
+.colored-text-1 {
+    color: #04ff00; /* Red text for the first column */
+}
 
-        .colored-text-1 {
-            color: red;
-        }
+.colored-text-2 {
+    color: #1500ff; /* Green text for the second column */
+}
 
-        .colored-text-2 {
-            color: green;
-        }
+.colored-text-3 {
+    color: #0000ff; /* Blue text for the third column */
+}
 
-        .colored-text-3 {
-            color: blue;
-        }
+.colored-text-4 {
+    color: #ff9900; /* Orange text for the fourth column */
+}
 
-        .colored-text-4 {
-            color: orange;
-        }
-
-        .colored-text-5 {
-            color: purple;
-        }
+.colored-text-5 {
+    color: #0000ff; /* Purple text for the fifth column */
+}
 
         @media (max-width: 600px) {
             .container {
@@ -220,7 +219,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="title">CSV Parser & Editor</h1>
+        <h1 id="title"> Med List</h1>
         <input type="file" id="fileInput" accept=".csv">
         <div class="column-selector" id="columnSelector"></div>
         <select id="columnSelect" onchange="sortRows()">
