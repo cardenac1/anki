@@ -378,7 +378,7 @@
                 const textarea = document.createElement('textarea');
                 textarea.value = value;
                 textarea.oninput = function() {
-                    parsedData[currentRowIndex][colIndex] = textarea.value;
+                    parsedData[currentRowIndex][colIndex] = textarea.value; // Auto-save on input
                 };
                 form.appendChild(label);
                 form.appendChild(textarea);
