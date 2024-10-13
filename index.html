@@ -379,17 +379,30 @@
             });
         }
 
-        function sortRows() {
-            const columnIndex = document.getElementById('columnSelect').value;
-            if (columnIndex !== "") {
-                parsedData.sort((a, b) => {
-                    const valueA = a[columnIndex] ? a[columnIndex].toLowerCase() : "";
-                    const valueB = b[columnIndex] ? b[columnIndex].toLowerCase() : "";
-                    return valueA.localeCompare(valueB);
-                });
-                displayRows();
-            }
-        }
+        
+function sortRows() {
+    const columnIndex = document.getElementById('columnSelect').value;
+    if (columnIndex !== "") {
+        parsedData.sort((a, b) => {
+            const valueA = a[columnIndex] ? a[columnIndex].toLowerCase() : "";
+            const valueB = b[columnIndex] ? b[columnIndex].toLowerCase() : "";
+
+            // If both values are blank, they are equal
+            if (valueA === "" && valueB === "") return 0;
+
+            // If valueA is blank, sort it after valueB
+            if (valueA === "") return 1;
+
+            // If valueB is blank, sort it after valueA
+            if (valueB === "") return -1;
+
+            // If both values are non-blank, compare them normally
+            return valueA.localeCompare(valueB);
+        });
+        displayRows();
+    }
+}
+
 
         function showDetails(index) {
             currentRowIndex = index;
