@@ -454,13 +454,20 @@ function sortRows() {
             document.body.removeChild(link);
         }
 
-        function deleteCurrentEntry() {
-            if (currentRowIndex !== -1) {
-                parsedData.splice(currentRowIndex, 1);
-                backToList();
-                displayRows();
-            }
+function deleteCurrentEntry() {
+    if (currentRowIndex !== -1) {
+        const confirmDeletion = confirm("Are you sure you want to delete this entry?");
+        if (confirmDeletion) {
+            // Proceed with deletion if user confirmed
+            parsedData.splice(currentRowIndex, 1);
+            backToList();
+            displayRows();
+        } else {
+            // If user cancels, do nothing
+            console.log("Deletion canceled");
         }
+    }
+}
 
         function addEntry(event) {
             event.preventDefault();
