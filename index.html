@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV Parser App</title>
+    <title>CSV Parser & Editor</title>
     <style>
         body {
             background-color: #121212;
@@ -15,14 +15,14 @@
 
         .container {
             width: 100%;
-            max-width: 900px; /* Increased for larger screens */
+            max-width: 900px;
             margin: auto;
             padding: 20px;
         }
 
         h1 {
             text-align: center;
-            font-size: 2em; /* Increased font size */
+            font-size: 2em;
         }
 
         input[type="file"] {
@@ -37,12 +37,12 @@
 
         .row-item {
             background-color: #1e1e1e;
-            padding: 15px; /* Increased padding */
+            padding: 15px;
             margin: 8px 0;
             cursor: pointer;
-            border-radius: 8px; /* Larger rounded corners */
-            font-size: 1.2em; /* Increased font size */
-            word-wrap: break-word; /* Ensure long text wraps */
+            border-radius: 8px;
+            font-size: 1.2em;
+            word-wrap: break-word;
         }
 
         .row-item:hover {
@@ -71,39 +71,30 @@
         label {
             display: block;
             margin-top: 10px;
-            font-size: 1.2em; /* Larger labels */
+            font-size: 1.2em;
         }
 
         textarea {
-            width: 100%;
-            resize: vertical;
-            padding: 15px; /* Increased padding for textboxes */
+            width: 95%; /* Prevents textboxes from extending too far */
+            resize: both; /* Resizable in both directions */
+            padding: 15px;
             background-color: #333333;
             color: #ffffff;
             border: 1px solid #444444;
             border-radius: 8px;
-            font-size: 1.2em; /* Larger font size for textareas */
-        }
-
-        .data-view {
-            white-space: pre-line;
-            margin-bottom: 20px;
-            font-size: 1.2em; /* Increased font size */
-        }
-
-        .data-view strong {
-            display: block;
-            margin-top: 10px;
+            font-size: 1.2em;
+            box-sizing: border-box;
+            margin-bottom: 10px;
         }
 
         button {
             margin-top: 20px;
-            padding: 15px 25px; /* Increased padding for buttons */
+            padding: 15px 25px;
             background-color: #1976d2;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 1.1em; /* Larger font size for buttons */
+            font-size: 1.1em;
             cursor: pointer;
         }
 
@@ -124,7 +115,7 @@
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 1.1em; /* Increased font size for select dropdown */
+            font-size: 1.1em;
         }
 
         .column-selector {
@@ -141,7 +132,7 @@
             border-radius: 8px;
             cursor: pointer;
             color: white;
-            font-size: 1.1em; /* Larger font size for column buttons */
+            font-size: 1.1em;
             text-align: center;
             flex: 1 0 22%;
             box-sizing: border-box;
@@ -152,22 +143,61 @@
             border-color: #28a745;
         }
 
+        /* Keep the export button at the top right */
+        #exportButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            padding: 10px 20px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        #exportButton:hover {
+            background-color: #145a9d;
+        }
+
+        .colored-text-1 {
+            color: red;
+        }
+
+        .colored-text-2 {
+            color: green;
+        }
+
+        .colored-text-3 {
+            color: blue;
+        }
+
+        .colored-text-4 {
+            color: orange;
+        }
+
+        .colored-text-5 {
+            color: blue;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
             }
 
             h1 {
-                font-size: 1.6em; /* Reduced font size for mobile */
+                font-size: 1.6em;
             }
 
             textarea {
-                font-size: 1em; /* Reduced font size for mobile */
+                font-size: 1em;
             }
 
             button, select {
                 width: 100%;
-                font-size: 1em; /* Slightly smaller text on mobile */
+                font-size: 1em;
             }
 
             .row-item {
@@ -175,7 +205,14 @@
             }
 
             .column-button {
-                flex: 1 0 46%; /* Adjusted for smaller mobile screens */
+                flex: 1 0 46%;
+            }
+
+            #exportButton {
+                width: auto;
+                top: 10px;
+                right: 10px;
+                font-size: 0.9em;
             }
         }
 
@@ -196,17 +233,15 @@
                 <h2 id="detailsTitle">Details View</h2>
                 <button onclick="backToList()">Back to List</button>
             </div>
-            <div id="dataView" class="data-view"></div>
-            <form id="editForm" style="display:none;"></form>
+            <form id="editForm"></form>
             <div class="nav-buttons">
-                <button id="toggleButton" onclick="toggleEditMode()">Switch to Edit</button>
                 <button id="prevButton" onclick="navigateDetails(-1)">Previous</button>
                 <button id="nextButton" onclick="navigateDetails(1)">Next</button>
             </div>
         </div>
-
-        <button onclick="exportCSV()">Export CSV</button>
     </div>
+
+    <button id="exportButton" onclick="exportCSV()">Export CSV</button>
 
     <!-- Include Papa Parse from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -215,19 +250,23 @@
         let parsedData = [];
         let headers = [];
         let currentRowIndex = -1;
-        let isEditMode = false;
-        let selectedColumns = [0, 1, 2]; // Default selected columns for row label
+        let selectedColumns = [0, 1, 2];
+
+        const colors = ['colored-text-1', 'colored-text-2', 'colored-text-3', 'colored-text-4', 'colored-text-5'];
 
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 Papa.parse(file, {
                     complete: function(results) {
-                        parsedData = results.data.slice(1); // Data excluding headers
-                        headers = results.data[0]; // First row as headers
+                        parsedData = results.data.slice(1);
+                        headers = results.data[0];
                         populateColumnSelector();
                         populateColumnSelect();
                         displayRows();
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
                     },
                     header: false,
                     skipEmptyLines: true
@@ -276,13 +315,11 @@
             const rowList = document.getElementById('rowList');
             rowList.innerHTML = '';
             parsedData.forEach((row, index) => {
-                if (row.length > 3) {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'row-item';
-                    listItem.textContent = `Row ${index + 1}: ${selectedColumns.map(colIndex => row[colIndex]).join(', ')}`;
-                    listItem.onclick = () => showDetails(index);
-                    rowList.appendChild(listItem);
-                }
+                const listItem = document.createElement('li');
+                listItem.className = 'row-item';
+                listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(', ')}`;
+                listItem.onclick = () => showDetails(index);
+                rowList.appendChild(listItem);
             });
         }
 
@@ -301,56 +338,24 @@
         function showDetails(index) {
             currentRowIndex = index;
             const detailsView = document.getElementById('detailsView');
-            const dataView = document.getElementById('dataView');
             const form = document.getElementById('editForm');
+            form.innerHTML = '';
 
-            let detailsText = '';
+            // Create editable text areas for each data value
             parsedData[index].forEach((value, colIndex) => {
-                detailsText += `<strong>${headers[colIndex]}:</strong><br>${value}<br><br>`;
+                const label = document.createElement('label');
+                label.textContent = headers[colIndex];
+                const textarea = document.createElement('textarea');
+                textarea.value = value;
+                textarea.oninput = function() {
+                    parsedData[currentRowIndex][colIndex] = textarea.value; // Save on input
+                };
+                form.appendChild(label);
+                form.appendChild(textarea);
             });
 
-            dataView.innerHTML = detailsText;
-            dataView.style.display = 'block';
-            form.style.display = 'none';
-            document.getElementById('toggleButton').textContent = 'Switch to Edit';
-
-            isEditMode = false;
             detailsView.style.display = 'block';
             updateNavButtons();
-        }
-
-        function toggleEditMode() {
-            const dataView = document.getElementById('dataView');
-            const form = document.getElementById('editForm');
-            const toggleButton = document.getElementById('toggleButton');
-
-            if (isEditMode) {
-                showDetails(currentRowIndex);
-            } else {
-                form.innerHTML = '';
-
-                // Convert data to editable fields in edit mode
-                parsedData[currentRowIndex].forEach((value, colIndex) => {
-                    if (colIndex > 2) {
-                        const label = document.createElement('label');
-                        label.textContent = headers[colIndex];
-                        const textarea = document.createElement('textarea');
-                        textarea.value = value;
-                        textarea.oninput = function() {
-                            parsedData[currentRowIndex][colIndex] = textarea.value; // Auto-save on input
-                        };
-                        form.appendChild(label);
-                        form.appendChild(textarea);
-                    }
-                });
-
-                // Hide text view and show the form for editing
-                dataView.style.display = 'none';
-                form.style.display = 'block';
-                toggleButton.textContent = 'Switch to View';
-            }
-
-            isEditMode = !isEditMode;
         }
 
         function navigateDetails(step) {
