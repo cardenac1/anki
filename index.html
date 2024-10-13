@@ -162,7 +162,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="title">CSV Parser & Editor</h1>
+        <h1 id="title">Med List</h1>
         <input type="file" id="fileInput" accept=".csv">
         <div class="column-selector" id="columnSelector"></div>
         <select id="columnSelect" onchange="sortRows()">
@@ -258,7 +258,7 @@
                 if (row.length > 3) {
                     const listItem = document.createElement('li');
                     listItem.className = 'row-item';
-                    listItem.textContent = `Row ${index + 1}: ${selectedColumns.map(colIndex => row[colIndex]).join(', ')}`;
+                    listItem.textContent = `${index + 1}: ${selectedColumns.map(colIndex => row[colIndex]).join(', ')}`;
                     listItem.onclick = () => showDetails(index);
                     rowList.appendChild(listItem);
                 }
