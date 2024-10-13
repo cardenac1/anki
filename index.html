@@ -43,6 +43,10 @@
             border-radius: 8px;
             font-size: 1.2em;
             word-wrap: break-word;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Display values in grid */
+            gap: 10px;
+            align-items: center;
         }
 
         .row-item:hover {
@@ -66,7 +70,7 @@
         #editForm {
             display: flex;
             flex-direction: column;
-            align-items: center; /* Center the form content */
+            align-items: center;
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
@@ -74,14 +78,14 @@
 
         label {
             display: block;
-            text-align: center; /* Center the label text */
+            text-align: center;
             margin-top: 10px;
             font-size: 1.2em;
         }
 
         textarea {
-            width: 80%; /* Ensure the textboxes are not too wide */
-            max-width: 700px; /* Set a maximum width */
+            width: 80%;
+            max-width: 700px;
             resize: vertical;
             padding: 20px;
             background-color: #333333;
@@ -89,7 +93,7 @@
             border: 1px solid #444444;
             border-radius: 8px;
             font-size: 1.2em;
-            margin: 10px auto; /* Center the textboxes */
+            margin: 10px auto;
             box-sizing: border-box;
         }
 
@@ -187,6 +191,20 @@
             color: #0000ff;
         }
 
+        .delete-button {
+            background-color: #e53935;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .delete-button:hover {
+            background-color: #c62828;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
@@ -207,6 +225,7 @@
 
             .row-item {
                 font-size: 1em;
+                grid-template-columns: repeat(1, 1fr); /* For smaller screens, make it 1 column */
             }
 
             .column-button {
@@ -232,6 +251,13 @@
         </select>
         <ul class="row-list" id="rowList"></ul>
 
+        <!-- Add Entry Section -->
+        <h2>Add New Entry</h2>
+        <form id="addEntryForm" onsubmit="addEntry(event)">
+            <div id="newEntryFields"></div>
+            <button type="submit">Add Entry</button>
+        </form>
+
         <div class="details-view" id="detailsView">
             <div class="details-header">
                 <h2 id="detailsTitle">Details View</h2>
@@ -243,6 +269,7 @@
                 <button id="prevButton" onclick="navigateDetails(-1)">Previous</button>
                 <button id="nextButton" onclick="navigateDetails(1)">Next</button>
             </div>
+            <button class="delete-button" onclick="deleteCurrentEntry()">Delete Entry</button>
         </div>
     </div>
 
@@ -267,6 +294,7 @@
                         populateColumnSelector();
                         populateColumnSelect();
                         displayRows();
+                        generateNewEntryFields();
                     },
                     error: function(error) {
                         console.error('Error parsing CSV:', error);
@@ -320,7 +348,7 @@
             parsedData.forEach((row, index) => {
                 const listItem = document.createElement('li');
                 listItem.className = 'row-item';
-                listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(', ')}`;
+                listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
                 listItem.onclick = () => showDetails(index);
                 rowList.appendChild(listItem);
             });
@@ -385,6 +413,36 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function deleteCurrentEntry() {
+            if (currentRowIndex !== -1) {
+                parsedData.splice(currentRowIndex, 1);
+                backToList();
+                displayRows();
+            }
+        }
+
+        function addEntry(event) {
+            event.preventDefault();
+            const newEntry = [];
+            const fields = document.querySelectorAll('#newEntryFields input');
+            fields.forEach(field => {
+                newEntry.push(field.value);
+                field.value = ''; // Reset input field
+            });
+            parsedData.push(newEntry);
+            displayRows();
+        }
+
+        function generateNewEntryFields() {
+            const newEntryFields = document.getElementById('newEntryFields');
+            newEntryFields.innerHTML = '';
+            headers.forEach(header => {
+                const input = document.createElement('input');
+                input.placeholder = header;
+                newEntryFields.appendChild(input);
+            });
         }
     </script>
 </body>
