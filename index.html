@@ -271,6 +271,8 @@
         </select>
         <ul class="row-list" id="rowList"></ul>
 
+         <button id="exportButtonMain" onclick="exportCSV()">Export CSV</button>
+
         <!-- Add Entry Section -->
         <h2>Add New Entry</h2>
         <form id="addEntryForm" onsubmit="addEntry(event)">
@@ -288,6 +290,7 @@
             <div class="nav-buttons">
                 <button id="prevButton" onclick="navigateDetails(-1)">Previous</button>
                 <button id="nextButton" onclick="navigateDetails(1)">Next</button>
+                 <button onclick="backToList()">Back to List</button>
             </div>
             <button class="delete-button" onclick="deleteCurrentEntry()">Delete Entry</button>
         </div>
