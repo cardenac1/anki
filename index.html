@@ -76,8 +76,8 @@
 
         textarea {
             width: 95%; /* Prevents textboxes from extending too far */
-            resize: both; /* Resizable in both directions */
-            padding: 15px;
+            resize: vertical; /* Vertical resizing for better mobile support */
+            padding: 20px; /* Larger padding for better touch support */
             background-color: #333333;
             color: #ffffff;
             border: 1px solid #444444;
@@ -179,7 +179,7 @@
         }
 
         .colored-text-5 {
-            color: blue;
+            color: purple;
         }
 
         @media (max-width: 600px) {
