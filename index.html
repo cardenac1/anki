@@ -504,35 +504,33 @@
             });
         }
 
-function saveCSVToLocalStorage() {
-    const csvContent = Papa.unparse([headers, ...parsedData]);
-    localStorage.setItem('csvData', csvContent);
-    console.log("Data saved to localStorage.");
-}
+        function saveCSVToLocalStorage() {
+            const csvContent = Papa.unparse([headers, ...parsedData]);
+            localStorage.setItem('csvData', csvContent);
+            console.log("Data saved to localStorage.");
+        }
 
-function loadCSVFromLocalStorage() {
-    const savedData = localStorage.getItem('csvData');
-    if (savedData) {
-        const results = Papa.parse(savedData, { header: false });
-        parsedData = results.data.slice(1); // Data rows
-        headers = results.data[0]; // First row as headers
+        function loadCSVFromLocalStorage() {
+            const savedData = localStorage.getItem('csvData');
+            if (savedData) {
+                const results = Papa.parse(savedData, { header: false });
+                parsedData = results.data.slice(1); // Data rows
+                headers = results.data[0]; // First row as headers
 
-        populateColumnSelector();
-        populateColumnSelect();
-        displayRows();
-        console.log("Data loaded from localStorage.");
-    } else {
-        console.log("No saved data found in localStorage.");
-    }
-}
+                populateColumnSelector();
+                populateColumnSelect();
+                displayRows();
+                console.log("Data loaded from localStorage.");
+            } else {
+                console.log("No saved data found in localStorage.");
+            }
+        }
 
-setInterval(saveCSVToLocalStorage, 60000); // Auto-save every minute
 
-// Load the saved data from localStorage when the page loads
-window.onload = function() {
-    loadCSVFromLocalStorage();
-};
-
+        // Load the saved data from localStorage when the page loads
+        window.onload = function() {
+            loadCSVFromLocalStorage();
+        };
     </script>
 </body>
 </html>
