@@ -482,31 +482,50 @@
             }
         }
 
+        function addEntry(event) {
+    event.preventDefault();
+    const newEntry = [];
 
+    // Get the values from the dynamically created input fields for a new entry
+    const fields = document.querySelectorAll('#newEntryFields input');
+    fields.forEach((field) => {
+        // Push each field value to newEntry array
+        newEntry.push(field.value.trim()); // Trim to remove extra spaces
+        field.value = ''; // Reset input field
+    });
+
+    // Check if all fields are empty to avoid adding an empty row
+    if (newEntry.every((value) => value === '')) {
+        alert('Please fill out at least one field.');
+        return;
+    }
+
+    // Add newEntry to parsedData array
+    parsedData.push(newEntry);
+
+    // Update the UI by redisplaying the rows
+    displayRows();
+
+    // Save to localStorage after adding a new entry
+    saveCSVToLocalStorage();
+
+    // Log for confirmation
+    console.log('New entry added:', newEntry);
+}
         
 
-        function addEntry(event) {
-            event.preventDefault();
-            const newEntry = [];
-            const fields = document.querySelectorAll('#newEntryFields input');
-            fields.forEach(field => {
-                newEntry.push(field.value);
-                field.value = ''; // Reset input field
-            });
-            parsedData.push(newEntry);
-            displayRows();
-            saveCSVToLocalStorage(); // Save after adding an entry
-        }
-
         function generateNewEntryFields() {
-            const newEntryFields = document.getElementById('newEntryFields');
-            newEntryFields.innerHTML = '';
-            headers.forEach(header => {
-                const input = document.createElement('input');
-                input.placeholder = header;
-                newEntryFields.appendChild(input);
-            });
-        }
+    const newEntryFields = document.getElementById('newEntryFields');
+    newEntryFields.innerHTML = ''; // Clear previous inputs
+
+    // Create input fields based on the headers
+    headers.forEach((header) => {
+        const input = document.createElement('input');
+        input.placeholder = header;
+        newEntryFields.appendChild(input);
+    });
+}
+
 
         function saveCSVToLocalStorage() {
             const csvContent = Papa.unparse([headers, ...parsedData]);
