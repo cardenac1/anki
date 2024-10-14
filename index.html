@@ -231,6 +231,8 @@
             <option value="">Select Column to Sort</option>
         </select>
         <button id="exportButtonMain" onclick="exportCSV()">Export CSV</button>
+        <!-- Add this button somewhere appropriate in your HTML, for example near the export button or below the sort dropdown -->
+<button onclick="resortRows()">Resort</button>
         <ul class="row-list" id="rowList"></ul>
 
         <!-- Add Entry Button -->
@@ -504,6 +506,30 @@
         window.onload = function() {
             loadCSVFromLocalStorage();
         };
+
+        function resortRows() {
+    // Get the current column index from the selected option
+    const columnIndex = document.getElementById('columnSelect').value;
+    
+    if (columnIndex !== "") {
+        // Re-apply the sorting logic based on the selected column index
+        parsedData.sort((a, b) => {
+            const valueA = a[columnIndex] ? a[columnIndex].toLowerCase() : "";
+            const valueB = b[columnIndex] ? b[columnIndex].toLowerCase() : "";
+
+            // Sort blanks to the bottom
+            if (valueA === "" && valueB === "") return 0;
+            if (valueA === "") return 1;
+            if (valueB === "") return -1;
+
+            return valueA.localeCompare(valueB);
+        });
+
+        // Redisplay the rows after sorting
+        displayRows();
+    }
+}
+        
     </script>
 </body>
 </html>
