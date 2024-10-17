@@ -5,222 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Med List</title>
     <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            margin: auto;
-            padding: 50px;
-        }
+       body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: auto;
+    padding: 20px;
+}
 
-        .container {
-            width: 100%;
-            max-width: 900px;
-            margin: auto;
-            padding: 50px;
-        }
+.container {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
 
-        h1 {
-            text-align: center;
-            font-size: 2em;
-        }
+h1 {
+    text-align: center;
+    font-size: 2em;
+}
 
-        input[type="file"] {
-            display: block;
-            margin: 20px auto;
-        }
+input[type="file"] {
+    display: block;
+    margin: 20px auto;
+}
 
-        .row-list {
-            list-style: none;
-            padding: 0;
-        }
+.row-list {
+    list-style: none;
+    padding: 0;
+}
 
-        .row-item {
-            background-color: #1e1e1e;
-            padding: 15px;
-            margin: 8px 0;
-            cursor: pointer;
-            border-radius: 8px;
-            font-size: 1.2em;
-            word-wrap: break-word;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            align-items: center;
-        }
+.row-item {
+    background-color: #1e1e1e;
+    padding: 15px;
+    margin: 8px 0;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 1.2em;
+    word-wrap: break-word;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    align-items: center;
+}
 
-        .row-item:hover {
-            background-color: #333333;
-        }
+.row-item:hover {
+    background-color: #333333;
+}
 
-        .details-view {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #222222;
-            padding: 40px 20px 150px 20px;
-            overflow-y: auto;
-            box-sizing: border-box;
-            z-index: 1000;
-        }
+.details-view {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #222222;
+    padding: 20px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    z-index: 1000;
+}
 
-        #editForm {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-        }
+#editForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
 
-        label {
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-            font-size: 1.2em;
-        }
+label {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.2em;
+}
 
-        textarea {
-            width: 80%;
-            max-width: 700px;
-            resize: vertical;
-            padding: 20px;
-            background-color: #333333;
-            color: #ffffff;
-            border: 1px solid #444444;
-            border-radius: 8px;
-            font-size: 1.2em;
-            margin: 10px auto;
-            box-sizing: border-box;
-        }
+textarea {
+    width: 90%;
+    max-width: 800px;
+    resize: vertical;
+    padding: 20px;
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #444444;
+    border-radius: 8px;
+    font-size: 1.5em; /* Increase font size for mobile editing */
+    margin: 10px auto;
+    box-sizing: border-box;
+}
 
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
 
-        button {
-            padding: 15px 25px;
-            background-color: #1976d2;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-        }
+button {
+    padding: 15px 25px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
 
-        button:hover {
-            background-color: #145a9d;
-        }
+button:hover {
+    background-color: #145a9d;
+}
 
-        select {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #333333;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-        }
+select {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #333333;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+}
 
-        .column-selector {
-            display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
+.column-selector {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
 
-        .column-button {
-            padding: 15px;
-            margin: 5px;
-            background-color: #444444;
-            border: 1px solid #666666;
-            border-radius: 8px;
-            cursor: pointer;
-            color: white;
-            font-size: 1.1em;
-            text-align: center;
-            flex: 1 0 22%;
-            box-sizing: border-box;
-        }
+.column-button {
+    padding: 15px;
+    margin: 5px;
+    background-color: #444444;
+    border: 1px solid #666666;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    font-size: 1.1em;
+    text-align: center;
+    flex: 1 0 22%;
+    box-sizing: border-box;
+}
 
-        .column-button.selected {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
+.column-button.selected {
+    background-color: #28a745;
+    border-color: #28a745;
+}
 
-        #exportButton {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 999;
-            padding: 10px 20px;
-            background-color: #1976d2;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-        }
+#exportButton {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999;
+    padding: 10px 20px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+}
 
-        #exportButton:hover {
-            background-color: #145a9d;
-        }
+#exportButton:hover {
+    background-color: #145a9d;
+}
 
-        /* Cool-toned light color scheme */
-.colored-text-1 { color: #82d4f0; } /* Light blue */
-.colored-text-2 { color: #ff5c5c; } /* Bright red */
-.colored-text-3 { color: #ffe066; } /* Vibrant yellow */
-.colored-text-4 { color: #79e89f; } /* Light green */
-.colored-text-5 { color: #4fc4e8; } /* Bold cyan */
-.colored-text-6 { color: #ff9052; } /* Warm orange */
-.colored-text-7 { color: #6ee7df; } /* Bright teal */
-.colored-text-8 { color: #adb8e6; } /* Muted blue */
-.colored-text-9 { color: #9ab6e2; } /* Light blue */
-.colored-text-10 { color: #f5a623; } /* Warm gold */
+/* Light Color Scheme */
+.colored-text-1 { color: #82d4f0; }
+.colored-text-2 { color: #ff5c5c; }
+.colored-text-3 { color: #ffe066; }
+.colored-text-4 { color: #79e89f; }
+.colored-text-5 { color: #4fc4e8; }
+.colored-text-6 { color: #ff9052; }
+.colored-text-7 { color: #6ee7df; }
+.colored-text-8 { color: #adb8e6; }
+.colored-text-9 { color: #9ab6e2; }
+.colored-text-10 { color: #f5a623; }
 
+/* Delete Button */
+.delete-button {
+    background-color: #e53935;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
 
-        .delete-button {
-            background-color: #e53935;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+.delete-button:hover {
+    background-color: #c62828;
+}
 
-        .delete-button:hover {
-            background-color: #c62828;
-        }
+/* Modal for adding new entry */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding-top: 60px;
+}
 
-        /* Modal for adding new entry */
-        .modal {
-            display: none; 
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding-top: 60px;
-        }
+.modal-content {
+    background-color: #333333;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    color: white;
+    border-radius: 8px;
+}
 
-        .modal-content {
-            background-color: #333333;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            color: white;
-            border-radius: 8px;
-        }
+/* Media Queries for Mobile */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    textarea {
+        font-size: 1.4em; /* Increase size for mobile */
+    }
+
+    button, select {
+        width: 100%;
+        font-size: 1.1em;
+    }
+
+    .row-item {
+        font-size: 1em;
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .column-button {
+        flex: 1 0 46%;
+    }
+
+    #exportButton {
+        font-size: 1em;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    textarea {
+        font-size: 1.2em; /* Further increase for small screens */
+    }
+
+    .modal-content {
+        width: 95%; /* Make modal full width on small screens */
+    }
+}
+
     </style>
 </head>
 <body>
