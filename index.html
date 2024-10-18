@@ -20,6 +20,40 @@
     padding: 20px;
 }
 
+
+        .search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    padding: 10px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    width: 250px;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+button:hover {
+    background-color: #145a9d;
+}
+
+
+
+        
+        
 h1 {
     text-align: center;
     font-size: 2em;
@@ -277,6 +311,12 @@ select {
         <!-- Add this button somewhere appropriate in your HTML, for example near the export button or below the sort dropdown -->
 <button onclick="resortRows()">Resort</button>
         <ul class="row-list" id="rowList"></ul>
+        <!-- Search Bar Section -->
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search..." />
+    <button onclick="searchRows()">Search</button>
+</div>
+
 
         <!-- Add Entry Button -->
         <button onclick="showAddEntryModal()">Add New Entry</button>
@@ -572,6 +612,37 @@ select {
         displayRows();
     }
 }
+
+        // Function to filter rows based on search input
+function searchRows() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+
+    // Filter rows based on search query
+    const filteredData = parsedData.filter(row => {
+        // Check if any column in the row contains the search query
+        return row.some(colValue => colValue.toLowerCase().includes(query));
+    });
+
+    // Display filtered rows
+    displayFilteredRows(filteredData);
+}
+
+// Function to display filtered rows
+function displayFilteredRows(filteredData) {
+    const rowList = document.getElementById('rowList');
+    rowList.innerHTML = ''; // Clear current rows
+
+    filteredData.forEach((row, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = 'row-item';
+        listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
+        listItem.onclick = () => showDetails(index); // Allow opening details of filtered rows
+        rowList.appendChild(listItem);
+    });
+}
+
+
+        
         
     </script>
 </body>
