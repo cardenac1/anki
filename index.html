@@ -591,21 +591,36 @@ select {
             loadCSVFromLocalStorage();
         };
 
-        function resortRows() {
+
+
+
+
+        
+function resortRows() {
     // Get the current column index from the selected option
     const columnIndex = document.getElementById('columnSelect').value;
     
     if (columnIndex !== "") {
         // Re-apply the sorting logic based on the selected column index
         parsedData.sort((a, b) => {
-            const valueA = a[columnIndex] ? a[columnIndex].toLowerCase() : "";
-            const valueB = b[columnIndex] ? b[columnIndex].toLowerCase() : "";
+            let valueA = a[columnIndex] ? a[columnIndex].toLowerCase() : "";
+            let valueB = b[columnIndex] ? b[columnIndex].toLowerCase() : "";
 
             // Sort blanks to the bottom
             if (valueA === "" && valueB === "") return 0;
             if (valueA === "") return 1;
             if (valueB === "") return -1;
 
+            // Check if both values are numbers and sort numerically if so
+            const numA = parseFloat(valueA);
+            const numB = parseFloat(valueB);
+
+            if (!isNaN(numA) && !isNaN(numB)) {
+                // Both are numbers, so compare them numerically
+                return numA - numB;
+            }
+
+            // If not both numbers, sort alphabetically
             return valueA.localeCompare(valueB);
         });
 
@@ -613,6 +628,7 @@ select {
         displayRows();
     }
 }
+
 
 
 
