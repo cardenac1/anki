@@ -614,35 +614,57 @@ select {
     }
 }
 
-        // Function to filter rows based on search input
+
+
+
+
+
+
+        // Function to search and filter rows
 function searchRows() {
     const query = document.getElementById('searchInput').value.toLowerCase();
 
     // Filter rows based on search query
     const filteredData = parsedData.filter(row => {
-        // Check if any column in the row contains the search query
         return row.some(colValue => colValue.toLowerCase().includes(query));
     });
 
-    // Display filtered rows
+    // Display filtered rows or a "No results" message if none match
     displayFilteredRows(filteredData);
 }
 
-// Function to display filtered rows
+// Function to display filtered rows or show "No results found" message
 function displayFilteredRows(filteredData) {
     const rowList = document.getElementById('rowList');
     rowList.innerHTML = ''; // Clear current rows
 
-    filteredData.forEach((row, index) => {
-        const listItem = document.createElement('li');
-        listItem.className = 'row-item';
-        listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
-        listItem.onclick = () => showDetails(index); // Allow opening details of filtered rows
-        rowList.appendChild(listItem);
-    });
+    if (filteredData.length === 0) {
+        // Display "No results found" if no matching rows
+        const noResultsItem = document.createElement('li');
+        noResultsItem.className = 'row-item';
+        noResultsItem.style.textAlign = 'center';
+        noResultsItem.style.fontSize = '1.2em';
+        noResultsItem.style.color = '#ff5c5c'; // Optional: Red color for no results
+        noResultsItem.textContent = 'No results found';
+        rowList.appendChild(noResultsItem);
+    } else {
+        // Display the filtered rows
+        filteredData.forEach((row, index) => {
+            const listItem = document.createElement('li');
+            listItem.className = 'row-item';
+            listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
+            listItem.onclick = () => showDetails(index);
+            rowList.appendChild(listItem);
+        });
+    }
 }
 
 
+
+
+
+
+        
         
         
     </script>
