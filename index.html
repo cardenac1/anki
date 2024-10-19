@@ -21,22 +21,24 @@
 }
 
 
-        .search-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
+       .search-container {
+           display: none; /* Hidden by default */
+           margin-top: 10px;
+       }
+ 
 
-#searchInput {
-    padding: 10px;
-    font-size: 1.1em;
-    border: none;
-    border-radius: 8px;
-    width: 250px;
-    margin-right: 10px;
-    display: none; /* Initially hidden */
-}
+    #searchInput {
+           padding: 10px;
+           font-size: 1.1em;
+           border: none;
+           border-radius: 8px;
+           width: 250px;
+           margin-right: 10px;
+       }
 
+
+
+        
 button {
     padding: 10px 20px;
     background-color: #1976d2;
@@ -315,16 +317,15 @@ select {
             <option value="">Select Column to Sort</option>
         </select>
 
+ <div class="container">
+        <!-- Button to toggle the search field -->
+        <button onclick="toggleSearch()">Search</button>
 
-<!-- Button to toggle the search field -->
-<button onclick="toggleSearch()">Search</button>
-
-<!-- Search field and Enter button (initially hidden) -->
-<div id="searchContainer" style="display: none; margin-top: 10px;">
-    <input type="text" id="searchInput" placeholder="Type your search..." />
-    <button onclick="searchRows()">Enter</button>
-</div>
-
+        <!-- Search field and Enter button (initially hidden) -->
+        <div id="searchContainer" class="search-container">
+            <input type="text" id="searchInput" placeholder="Type your search..." />
+            <button onclick="searchRows()">Enter</button>
+        </div> 
 
         
 
