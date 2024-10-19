@@ -634,14 +634,23 @@ function resortRows() {
 
 
 
+// Add a new array to hold the mapping of the filtered rows to the original data
+let filteredIndexes = [];
 
-        // Function to search and filter rows
+// Function to search and filter rows
 function searchRows() {
     const query = document.getElementById('searchInput').value.toLowerCase();
 
-    // Filter rows based on search query
-    const filteredData = parsedData.filter(row => {
-        return row.some(colValue => colValue.toLowerCase().includes(query));
+    // Clear the filtered indexes
+    filteredIndexes = [];
+
+    // Filter rows based on search query and store the matching indexes
+    const filteredData = parsedData.filter((row, index) => {
+        const isMatch = row.some(colValue => colValue.toLowerCase().includes(query));
+        if (isMatch) {
+            filteredIndexes.push(index); // Store the index of the matching row
+        }
+        return isMatch;
     });
 
     // Display filtered rows or a "No results" message if none match
@@ -664,11 +673,13 @@ function displayFilteredRows(filteredData) {
         rowList.appendChild(noResultsItem);
     } else {
         // Display the filtered rows
-        filteredData.forEach((row, index) => {
+        filteredData.forEach((row, filteredIndex) => {
             const listItem = document.createElement('li');
             listItem.className = 'row-item';
             listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
-            listItem.onclick = () => showDetails(index);
+            
+            // Pass the correct original index using filteredIndexes
+            listItem.onclick = () => showDetails(filteredIndexes[filteredIndex]);
             rowList.appendChild(listItem);
         });
     }
