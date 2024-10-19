@@ -645,54 +645,68 @@ let filteredIndexes = [];
 
 
 
+          // Toggle visibility of the search input and "Enter" button
+        function toggleSearch() {
+            const searchContainer = document.getElementById('searchContainer');
+            
+            // Toggle visibility
+            if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
+                searchContainer.style.display = 'block'; // Show the search input
+                document.getElementById('searchInput').focus(); // Focus on the input when it appears
+            } else {
+                searchContainer.style.display = 'none'; // Hide the search input
+            }
+        }
 
+        // Trigger the search when the "Enter" button is clicked
+        function searchRows() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
+            if (!searchTerm) {
+                alert("Please enter a search term.");
+                return;
+            }
 
+            console.log("Searching for:", searchTerm);
 
-        
-// Toggle visibility of the search input and "Enter" button
-function toggleSearch() {
-    const searchContainer = document.getElementById('searchContainer');
-    
-    // Toggle between showing and hiding the search field + button
-    if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
-        searchContainer.style.display = 'block'; // Show the search input
-        document.getElementById('searchInput').focus(); // Focus on the input when it appears
-    } else {
-        searchContainer.style.display = 'none'; // Hide the search input
-    }
-}
+            // Example data - replace this with your actual data handling logic
+            const data = ["Patient 1", "Patient 2", "Patient 3", "Patient A", "Patient B"];
+            
+            // Filter the data based on the search term
+            const filteredData = data.filter(item => item.toLowerCase().includes(searchTerm));
 
-// Trigger the search when the "Enter" button is clicked
-function searchRows() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-    if (!searchTerm) {
-        alert("Please enter a search term.");
-        return;
-    }
-
-    console.log("Searching for:", searchTerm);
-
-    // Example data - replace this with your actual data handling logic
-    const data = ["Patient 1", "Patient 2", "Patient 3", "Patient A", "Patient B"];
-
-    // Filter the data based on the search term
-    const filteredData = data.filter(item => item.toLowerCase().includes(searchTerm));
-
-    if (filteredData.length > 0) {
-        console.log("Found results:", filteredData);
-        // Update your UI or DOM with filtered data
-    } else {
-        console.log("No results found");
-    }
-}
-
-    
-
+            if (filteredData.length > 0) {
+                console.log("Found results:", filteredData);
+                updateRowList(filteredData);
+            } else {
+                console.log("No results found");
+                updateRowList([]);
+            }
+        }
 
 
         
+
+        // Function to update the row list with search results
+        function updateRowList(filteredData) {
+            const rowList = document.getElementById('rowList');
+            rowList.innerHTML = ''; // Clear existing rows
+
+            if (filteredData.length === 0) {
+                const noResultsItem = document.createElement('li');
+                noResultsItem.textContent = 'No results found';
+                rowList.appendChild(noResultsItem);
+            } else {
+                filteredData.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = item;
+                    rowList.appendChild(listItem);
+                });
+            }
+        }
+
+    
+
 // Function to display filtered rows or show "No results found" message
 function displayFilteredRows(filteredData) {
     const rowList = document.getElementById('rowList');
