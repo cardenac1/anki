@@ -708,18 +708,15 @@ function resortRows() {
 
 
 
-
 // Function to auto-resize a textarea based on its content
 function autoResizeTextarea(textarea) {
     textarea.style.height = 'auto'; // Reset height so it recalculates
     textarea.style.height = textarea.scrollHeight + 'px'; // Set height based on content and line breaks
 }
 
-
-
 // Function to handle showing the details
 function showDetails(index) {
-    currentRowIndex = index;
+    currentRowIndex = index; // Set the current row index to match the selected row
     const detailsView = document.getElementById('detailsView');
     const form = document.getElementById('editForm');
     form.innerHTML = ''; // Clear previous form content
@@ -732,18 +729,31 @@ function showDetails(index) {
         const textarea = document.createElement('textarea');
         textarea.value = value; // Set the value from the CSV
 
-        // Append the label and textarea to the form
+        // Assign data attribute to identify the column index
+        textarea.setAttribute('data-col-index', colIndex);
+
         form.appendChild(label);
         form.appendChild(textarea);
 
-        // Delay to ensure the textarea is in the DOM before resizing
-        setTimeout(() => {
-            autoResizeTextarea(textarea); // Resize immediately based on content
-        }, 0); // No delay is necessary, but ensures DOM is ready
+        // Add input listener to resize as user types and save the updated value
+        textarea.addEventListener('input', function () {
+            autoResizeTextarea(this); // Resize dynamically as text changes
+            // Get the correct column index from the data attribute
+            const colIndex = this.getAttribute('data-col-index');
+            parsedData[currentRowIndex][colIndex] = this.value; // Save the updated data
+            saveCSVToLocalStorage(); // Save changes to local storage
+            displayRows(); // Update the main list to reflect changes
+        });
     });
 
     detailsView.style.display = 'block';
     updateNavButtons(); // Update the navigation buttons (Previous/Next)
+
+    // Use setTimeout to ensure the textareas are resized after they are rendered
+    setTimeout(() => {
+        const textareas = form.querySelectorAll('textarea');
+        textareas.forEach(textarea => autoResizeTextarea(textarea)); // Resize all textareas after rendering
+    }, 100); // Delay to ensure rendering
 }
 
 // Function to resize all textareas on page load
@@ -755,10 +765,28 @@ function resizeAllTextareas() {
 }
 
 // Call this function after loading the CSV to ensure all textareas resize properly
-window.onload = function() {
+window.onload = function () {
     loadCSVFromLocalStorage();
     setTimeout(resizeAllTextareas, 100); // Resize textareas after a small delay to ensure content is loaded
 };
+
+// Update the row list to reflect changes after editing
+function displayRows() {
+    const rowList = document.getElementById('rowList');
+    rowList.innerHTML = '';
+    parsedData.forEach((row, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = 'row-item';
+        listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
+        listItem.onclick = () => showDetails(index);
+        rowList.appendChild(listItem);
+    });
+}
+
+
+
+
+
 
 
         
