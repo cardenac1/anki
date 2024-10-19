@@ -280,7 +280,7 @@ select {
     }
 
     button, select {
-        font-size: 0.9em; /* Reduce button and select font size */
+        font-size: 1.5em; /* Reduce button and select font size */
         padding: 10px; /* Reduce padding for buttons */
         width: auto; /* Make buttons auto-width so they don’t stretch across the screen */
     }
@@ -309,7 +309,7 @@ select {
     }
 
     button, select {
-        font-size: 0.8em; /* Reduce button size for very small screens */
+        font-size: 1.5em; /* Reduce button size for very small screens */
         padding: 8px; /* Further reduce button padding */
     }
 
@@ -388,8 +388,8 @@ select {
         <div class="details-view" id="detailsView">
             <div class="details-header">
                 <h2 id="detailsTitle">Details View</h2>
-                <button onclick="backToList()">Back to List</button>
                 <button id="exportButton" onclick="exportCSV()">Export CSV</button>
+                <button onclick="backToList()">Back to List</button> 
             </div>
             <form id="editForm"></form>
             <div class="nav-buttons">
