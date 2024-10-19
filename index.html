@@ -645,23 +645,16 @@ function resortRows() {
 let filteredIndexes = [];
 
 
-
 // Toggle visibility of the search input and "Enter" button
 function toggleSearch() {
     const searchContainer = document.getElementById('searchContainer');
-    searchContainer.style.display = searchContainer.style.display === 'none' ? 'block' : 'none';
     
-    if (searchContainer.style.display === 'block') {
+    // Toggle between showing and hiding the search field + button
+    if (searchContainer.style.display === 'none') {
+        searchContainer.style.display = 'block'; // Show the search input
         document.getElementById('searchInput').focus(); // Focus on the input when it appears
-    }
-}
-
-        
-
-function handleSearch(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();  // Prevent form submission or page reload
-        searchRows(); // Call the search function when Enter is pressed
+    } else {
+        searchContainer.style.display = 'none'; // Hide the search input
     }
 }
 
@@ -690,6 +683,7 @@ function searchRows() {
     }
 }
 
+    
 
 // Function to display filtered rows or show "No results found" message
 function displayFilteredRows(filteredData) {
