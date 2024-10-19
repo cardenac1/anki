@@ -308,10 +308,11 @@ select {
             <option value="">Select Column to Sort</option>
         </select>
 
-<button onclick="toggleSearch()">Search</button>
-<input type="text" id="searchInput" placeholder="Search..." style="display: none;" />
-<button onclick="searchRows()">Search Now</button>
+        <button onclick="toggleSearch()">Search</button>
+<input type="text" id="searchInput" placeholder="Search..." style="display: none;" onkeydown="handleSearch(event)" />
 
+
+        
 
         <button id="exportButtonMain" onclick="exportCSV()">Export CSV</button>
         <!-- Add this button somewhere appropriate in your HTML, for example near the export button or below the sort dropdown -->
@@ -627,7 +628,8 @@ let filteredIndexes = [];
 
 
 
-function toggleSearch() {
+
+        function toggleSearch() {
     const searchInput = document.getElementById('searchInput');
     searchInput.style.display = searchInput.style.display === 'none' ? 'block' : 'none';
     if (searchInput.style.display === 'block') {
@@ -637,12 +639,13 @@ function toggleSearch() {
 
 function handleSearch(event) {
     if (event.key === 'Enter') {
-        searchRows(); // Trigger the search function when 'Enter' is pressed
+        searchRows(); // Trigger search function when 'Enter' is pressed
     }
 }
 
 function searchRows() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    console.log("Searching for:", searchTerm);
     const resultsList = document.getElementById('resultsList');
     resultsList.innerHTML = ''; // Clear previous results
 
