@@ -34,6 +34,7 @@
     border-radius: 8px;
     width: 250px;
     margin-right: 10px;
+    display: none; /* Initially hidden */
 }
 
 button {
@@ -615,30 +616,52 @@ function resortRows() {
 
 
 
+        
+
+
 
 
         // Add a new array to hold the mapping of the filtered rows to the original data
 let filteredIndexes = [];
 
-// Function to search and filter rows
-function searchRows() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
 
-    // Clear the filtered indexes
-    filteredIndexes = [];
 
-    // Filter rows based on search query and store the matching indexes
-    const filteredData = parsedData.filter((row, index) => {
-        const isMatch = row.some(colValue => colValue.toLowerCase().includes(query));
-        if (isMatch) {
-            filteredIndexes.push(index); // Store the index of the matching row
-        }
-        return isMatch;
-    });
-
-    // Display filtered rows or a "No results" message if none match
-    displayFilteredRows(filteredData);
+function toggleSearch() {
+    const searchInput = document.getElementById('searchInput');
+    searchInput.style.display = searchInput.style.display === 'none' ? 'block' : 'none';
+    if (searchInput.style.display === 'block') {
+        searchInput.focus(); // Focus the input when it appears
+    }
 }
+
+function handleSearch(event) {
+    if (event.key === 'Enter') {
+        searchRows(); // Trigger the search function when 'Enter' is pressed
+    }
+}
+
+function searchRows() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const resultsList = document.getElementById('resultsList');
+    resultsList.innerHTML = ''; // Clear previous results
+
+    const data = ["Patient 1", "Patient 2", "Patient 3", "Patient A", "Patient B"]; // Example data
+
+    const filteredData = data.filter(item => item.toLowerCase().includes(searchTerm));
+
+    if (filteredData.length > 0) {
+        filteredData.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.textContent = item;
+            resultsList.appendChild(listItem);
+        });
+    } else {
+        const listItem = document.createElement('li');
+        listItem.textContent = "No results found";
+        resultsList.appendChild(listItem);
+    }
+}
+
 
 // Function to display filtered rows or show "No results found" message
 function displayFilteredRows(filteredData) {
