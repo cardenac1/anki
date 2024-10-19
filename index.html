@@ -268,45 +268,45 @@ select {
     color: white;
     border-radius: 8px;
 }
-
-/* Media Queries for Mobile */
+/* For tablets and small devices */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-
-    textarea {
-        font-size: 1.4em; /* Increase size for mobile */
-    }
-
     button, select {
-        width: 100%;
-        font-size: 1.1em;
-    }
-
-    .row-item {
-        font-size: 1em;
-        grid-template-columns: repeat(1, 1fr);
-    }
-
-    .column-button {
-        flex: 1 0 46%;
+        width: auto; /* Change width from 100% to auto to make it smaller */
+        padding: 8px 15px; /* Reduce padding */
+        font-size: 0.9em; /* Slightly smaller font size */
     }
 
     #exportButton {
-        font-size: 1em;
-        top: 10px;
-        right: 10px;
+        padding: 8px 12px; /* Reduce padding for the export button */
+        font-size: 0.9em; /* Smaller font size */
+    }
+
+    .search-container {
+        width: auto; /* Adjust search container width */
+    }
+
+    #searchInput {
+        width: 200px; /* Make search input smaller */
+        font-size: 0.9em; /* Slightly smaller font size */
     }
 }
 
+/* For smaller mobile phones */
 @media (max-width: 480px) {
-    textarea {
-        font-size: 1.2em; /* Further increase for small screens */
+    button, select {
+        width: auto; /* Keep buttons from stretching too wide */
+        padding: 6px 10px; /* Further reduce padding */
+        font-size: 0.8em; /* Even smaller font size */
     }
 
-    .modal-content {
-        width: 95%; /* Make modal full width on small screens */
+    #exportButton {
+        padding: 6px 10px; /* Reduce padding for export button on smaller devices */
+        font-size: 0.8em; /* Adjust font size */
+    }
+
+    #searchInput {
+        width: 180px; /* Further reduce the width of the search input */
+        font-size: 0.8em; /* Smaller font size for search input */
     }
 }
 
