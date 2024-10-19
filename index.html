@@ -8,7 +8,7 @@
        body {
     background-color: #121212;
     color: #ffffff;
-    font-family: Arial, sans-serif;
+    font-family: "Menlo", "Consolas", "Courier New", monospace;
     margin: auto;
     padding: 20px;
 }
@@ -327,14 +327,13 @@ select {
             </div>
 
 
-        
-
-        <button id="exportButtonMain" onclick="exportCSV()">Export CSV</button>
-        <!-- Add this button somewhere appropriate in your HTML, for example near the export button or below the sort dropdown -->
+    
 <button onclick="resortRows()">Re-sort</button>
                 <!-- Add Entry Button -->
         <button onclick="showAddEntryModal()">Add New Entry</button>
-
+ <button id="exportButtonMain" onclick="exportCSV()">Export CSV</button>
+        <!-- Add this button somewhere appropriate in your HTML, for example near the export button or below the sort dropdown -->
+        
         
         <ul class="row-list" id="rowList"></ul>
         <!-- Search Bar Section -->
