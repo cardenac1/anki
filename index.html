@@ -316,8 +316,7 @@ select {
         </select>
 
 
-
-        <!-- Button to toggle the search field -->
+<!-- Button to toggle the search field -->
 <button onclick="toggleSearch()">Search</button>
 
 <!-- Search field and Enter button (initially hidden) -->
@@ -325,7 +324,6 @@ select {
     <input type="text" id="searchInput" placeholder="Type your search..." />
     <button onclick="searchRows()">Enter</button>
 </div>
-
 
 
         
@@ -645,12 +643,18 @@ function resortRows() {
 let filteredIndexes = [];
 
 
+
+
+
+
+
+        
 // Toggle visibility of the search input and "Enter" button
 function toggleSearch() {
     const searchContainer = document.getElementById('searchContainer');
     
     // Toggle between showing and hiding the search field + button
-    if (searchContainer.style.display === 'none') {
+    if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
         searchContainer.style.display = 'block'; // Show the search input
         document.getElementById('searchInput').focus(); // Focus on the input when it appears
     } else {
@@ -685,6 +689,9 @@ function searchRows() {
 
     
 
+
+
+        
 // Function to display filtered rows or show "No results found" message
 function displayFilteredRows(filteredData) {
     const rowList = document.getElementById('rowList');
