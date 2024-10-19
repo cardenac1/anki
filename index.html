@@ -272,61 +272,46 @@ select {
 
 
 
+/* Media Queries for Mobile */
 @media (max-width: 768px) {
-    /* For tablets and small devices */
-    .row-item {
-        grid-template-columns: repeat(1, 1fr); /* Stack columns vertically */
-        font-size: 1em; /* Adjust font size for smaller screens */
+    .container {
+        padding: 10px;
+    }
+
+    textarea {
+        font-size: 1.4em; /* Increase size for mobile */
     }
 
     button, select {
-        font-size: 1.5em; /* Reduce button and select font size */
-        padding: 10px; /* Reduce padding for buttons */
-        width: auto; /* Make buttons auto-width so they don’t stretch across the screen */
+        width: 100%;
+        font-size: 1.1em;
     }
 
-    #exportButton, #exportButtonMain, button {
-        width: auto; /* Prevent full-width stretching of buttons */
-        padding: 8px 15px; /* Adjust padding for smaller buttons */
+    .row-item {
+        font-size: 1em;
+        grid-template-columns: repeat(1, 1fr);
     }
 
-    /* Adjust the search container */
-    #searchInput {
-        width: 100%; /* Full width search input on smaller screens */
-        font-size: 1em; /* Adjust font size for smaller screens */
+    .column-button {
+        flex: 1 0 46%;
+    }
+
+    #exportButton {
+        font-size: 1em;
+        top: 10px;
+        right: 10px;
     }
 }
 
 @media (max-width: 480px) {
-    /* For phones and very small devices */
     textarea {
-        font-size: 1.2em; /* Further reduce font size for small screens */
+        font-size: 1.2em; /* Further increase for small screens */
     }
 
-    .row-item {
-        grid-template-columns: repeat(1, 1fr); /* Ensure single column stacking */
-        font-size: 0.9em; /* Further reduce font size */
-    }
-
-    button, select {
-        font-size: 1.5em; /* Reduce button size for very small screens */
-        padding: 8px; /* Further reduce button padding */
-    }
-
-    #exportButton, #exportButtonMain, button {
-        width: auto;
-        padding: 6px 12px; /* Smaller buttons on mobile */
-    }
-
-    #searchInput {
-        width: 100%;
-        font-size: 0.9em; /* Adjust font size for mobile screens */
+    .modal-content {
+        width: 95%; /* Make modal full width on small screens */
     }
 }
-
-
-
-
 
 
 
