@@ -169,19 +169,26 @@ select {
     margin-bottom: 20px;
 }
 
-.column-button {
-    padding: 15px;
+
+
+
+        .column-button {
+    padding: 8px; /* Smaller padding */
     margin: 5px;
     background-color: #444444;
     border: 1px solid #666666;
     border-radius: 8px;
     cursor: pointer;
     color: white;
-    font-size: 1.1em;
+    font-size: 0.9em; /* Decrease font size */
     text-align: center;
     flex: 1 0 22%;
     box-sizing: border-box;
 }
+
+
+
+        
 
 .column-button.selected {
     background-color: #28a745;
@@ -622,6 +629,8 @@ function resortRows() {
 
 
 
+        
+
 
         // Add a new array to hold the mapping of the filtered rows to the original data
 let filteredIndexes = [];
@@ -639,7 +648,8 @@ let filteredIndexes = [];
 
 function handleSearch(event) {
     if (event.key === 'Enter') {
-        searchRows(); // Trigger search function when 'Enter' is pressed
+        event.preventDefault();  // Prevent form submission or page reload
+        searchRows(); // Call the search function when Enter is pressed
     }
 }
 
