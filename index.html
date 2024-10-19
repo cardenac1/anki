@@ -301,7 +301,6 @@ select {
 </head>
 <body>
     <div class="container">
-        <h1 id="title">Med List</h1>
         <input type="file" id="fileInput" accept=".csv">
         <div class="column-selector" id="columnSelector"></div>
         <select id="columnSelect" onchange="sortRows()">
@@ -314,7 +313,7 @@ select {
 
         <button id="exportButtonMain" onclick="exportCSV()">Export CSV</button>
         <!-- Add this button somewhere appropriate in your HTML, for example near the export button or below the sort dropdown -->
-<button onclick="resortRows()">Resort</button>
+<button onclick="resortRows()">Re-sort</button>
         <ul class="row-list" id="rowList"></ul>
         <!-- Search Bar Section -->
 
