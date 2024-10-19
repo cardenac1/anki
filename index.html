@@ -268,47 +268,75 @@ select {
     color: white;
     border-radius: 8px;
 }
-/* For tablets and small devices */
+
+
+
+
 @media (max-width: 768px) {
+    /* For tablets and small devices */
+    .row-item {
+        grid-template-columns: repeat(1, 1fr); /* Stack columns vertically */
+        font-size: 1em; /* Adjust font size for smaller screens */
+    }
+
     button, select {
-        width: auto; /* Change width from 100% to auto to make it smaller */
-        padding: 8px 15px; /* Reduce padding */
-        font-size: 0.9em; /* Slightly smaller font size */
+        font-size: 0.9em; /* Reduce button and select font size */
+        padding: 10px; /* Reduce padding for buttons */
+        width: auto; /* Make buttons auto-width so they don’t stretch across the screen */
     }
 
-    #exportButton {
-        padding: 8px 12px; /* Reduce padding for the export button */
-        font-size: 0.9em; /* Smaller font size */
+    #exportButton, #exportButtonMain, button {
+        width: auto; /* Prevent full-width stretching of buttons */
+        padding: 8px 15px; /* Adjust padding for smaller buttons */
     }
 
-    .search-container {
-        width: auto; /* Adjust search container width */
-    }
-
+    /* Adjust the search container */
     #searchInput {
-        width: 200px; /* Make search input smaller */
-        font-size: 0.9em; /* Slightly smaller font size */
+        width: 100%; /* Full width search input on smaller screens */
+        font-size: 1em; /* Adjust font size for smaller screens */
     }
 }
 
-/* For smaller mobile phones */
 @media (max-width: 480px) {
-    button, select {
-        width: auto; /* Keep buttons from stretching too wide */
-        padding: 6px 10px; /* Further reduce padding */
-        font-size: 0.8em; /* Even smaller font size */
+    /* For phones and very small devices */
+    textarea {
+        font-size: 1.2em; /* Further reduce font size for small screens */
     }
 
-    #exportButton {
-        padding: 6px 10px; /* Reduce padding for export button on smaller devices */
-        font-size: 0.8em; /* Adjust font size */
+    .row-item {
+        grid-template-columns: repeat(1, 1fr); /* Ensure single column stacking */
+        font-size: 0.9em; /* Further reduce font size */
+    }
+
+    button, select {
+        font-size: 0.8em; /* Reduce button size for very small screens */
+        padding: 8px; /* Further reduce button padding */
+    }
+
+    #exportButton, #exportButtonMain, button {
+        width: auto;
+        padding: 6px 12px; /* Smaller buttons on mobile */
     }
 
     #searchInput {
-        width: 180px; /* Further reduce the width of the search input */
-        font-size: 0.8em; /* Smaller font size for search input */
+        width: 100%;
+        font-size: 0.9em; /* Adjust font size for mobile screens */
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
 
     </style>
 </head>
