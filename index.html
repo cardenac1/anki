@@ -317,15 +317,18 @@ select {
             <option value="">Select Column to Sort</option>
         </select>
 
- <div class="container">
-        <!-- Button to toggle the search field -->
-        <button onclick="toggleSearch()">Search</button>
 
-        <!-- Search field and Enter button (initially hidden) -->
-        <div id="searchContainer" class="search-container">
-            <input type="text" id="searchInput" placeholder="Type your search..." />
-            <button onclick="searchRows()">Enter</button>
-        </div> 
+        <div class="container">
+    <!-- Button to toggle the search field -->
+    <button onclick="toggleSearch()">Search</button>
+
+    <!-- Search input, Enter button, and Clear button (initially hidden) -->
+    <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Type your search..." />
+        <button onclick="searchRows()">Enter</button>
+        <button onclick="clearSearch()">Clear</button>
+    </div>
+
 
         
 
@@ -638,129 +641,93 @@ function resortRows() {
 
 
         
-
-
-        // Add a new array to hold the mapping of the filtered rows to the original data
-let filteredIndexes = [];
-
-
-
-          // Toggle visibility of the search input and "Enter" button
-        function toggleSearch() {
-            const searchContainer = document.getElementById('searchContainer');
-            
-            // Toggle visibility
-            if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
-                searchContainer.style.display = 'block'; // Show the search input
-                document.getElementById('searchInput').focus(); // Focus on the input when it appears
-            } else {
-                searchContainer.style.display = 'none'; // Hide the search input
-            }
-        }
-
-        // Trigger the search when the "Enter" button is clicked
-        function searchRows() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-            if (!searchTerm) {
-                alert("Please enter a search term.");
-                return;
+ function toggleSearch() {
+                const searchContainer = document.getElementById('searchContainer');
+                if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
+                    searchContainer.style.display = 'block'; // Show the search input
+                    document.getElementById('searchInput').focus(); // Focus on the input when it appears
+                } else {
+                    searchContainer.style.display = 'none'; // Hide the search input
+                }
             }
 
-            console.log("Searching for:", searchTerm);
+            function searchRows() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                filteredIndexes = []; // Reset the filtered index array
 
-            // Example data - replace this with your actual data handling logic
-            const data = ["Patient 1", "Patient 2", "Patient 3", "Patient A", "Patient B"];
-            
-            // Filter the data based on the search term
-            const filteredData = data.filter(item => item.toLowerCase().includes(searchTerm));
+                if (!searchTerm) {
+                    alert("Please enter a search term.");
+                    return;
+                }
 
-            if (filteredData.length > 0) {
-                console.log("Found results:", filteredData);
-                updateRowList(filteredData);
-            } else {
-                console.log("No results found");
-                updateRowList([]);
-            }
-        }
-
-
-        
-
-        // Function to update the row list with search results
-        function updateRowList(filteredData) {
-            const rowList = document.getElementById('rowList');
-            rowList.innerHTML = ''; // Clear existing rows
-
-            if (filteredData.length === 0) {
-                const noResultsItem = document.createElement('li');
-                noResultsItem.textContent = 'No results found';
-                rowList.appendChild(noResultsItem);
-            } else {
-                filteredData.forEach(item => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = item;
-                    rowList.appendChild(listItem);
+                // Filter the parsedData based on the search term
+                const filteredData = parsedData.filter((row, index) => {
+                    const matchFound = row.some(colValue => colValue.toLowerCase().includes(searchTerm));
+                    if (matchFound) {
+                        filteredIndexes.push(index); // Track the index of the filtered data
+                    }
+                    return matchFound;
                 });
+
+                if (filteredData.length > 0) {
+                    displayFilteredRows(filteredData);
+                } else {
+                    displayFilteredRows([]);
+                }
             }
-        }
 
-    
+            function clearSearch() {
+                document.getElementById('searchInput').value = '';
+                displayRows(); // Go back to displaying the original full data
+                document.getElementById('searchContainer').style.display = 'none'; // Hide search input after clearing
+            }
 
-// Function to display filtered rows or show "No results found" message
-function displayFilteredRows(filteredData) {
-    const rowList = document.getElementById('rowList');
-    rowList.innerHTML = ''; // Clear current rows
+            function displayFilteredRows(filteredData) {
+                const rowList = document.getElementById('rowList');
+                rowList.innerHTML = ''; // Clear current rows
 
-    if (filteredData.length === 0) {
-        // Display "No results found" if no matching rows
-        const noResultsItem = document.createElement('li');
-        noResultsItem.className = 'row-item';
-        noResultsItem.style.textAlign = 'center';
-        noResultsItem.style.fontSize = '1.2em';
-        noResultsItem.style.color = '#ff5c5c'; // Optional: Red color for no results
-        noResultsItem.textContent = 'No results found';
-        rowList.appendChild(noResultsItem);
-    } else {
-        // Display the filtered rows
-        filteredData.forEach((row, filteredIndex) => {
-            const listItem = document.createElement('li');
-            listItem.className = 'row-item';
-            listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
-            
-            // Pass the correct original index using filteredIndexes
-            listItem.onclick = () => showDetails(filteredIndexes[filteredIndex]);
-            rowList.appendChild(listItem);
-        });
-    }
-}
+                if (filteredData.length === 0) {
+                    const noResultsItem = document.createElement('li');
+                    noResultsItem.className = 'row-item';
+                    noResultsItem.style.textAlign = 'center';
+                    noResultsItem.style.fontSize = '1.2em';
+                    noResultsItem.style.color = '#ff5c5c';
+                    noResultsItem.textContent = 'No results found';
+                    rowList.appendChild(noResultsItem);
+                } else {
+                    filteredData.forEach((row, filteredIndex) => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'row-item';
+                        listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
+                        listItem.onclick = () => showDetails(filteredIndexes[filteredIndex]);
+                        rowList.appendChild(listItem);
+                    });
+                }
+            }
 
-// Modify the showDetails function to work as expected
-function showDetails(index) {
-    currentRowIndex = index; // Now it correctly maps to the original data index
-    const detailsView = document.getElementById('detailsView');
-    const form = document.getElementById('editForm');
-    form.innerHTML = '';
+            function showDetails(index) {
+                currentRowIndex = index;
+                const detailsView = document.getElementById('detailsView');
+                const form = document.getElementById('editForm');
+                form.innerHTML = '';
 
-    parsedData[index].forEach((value, colIndex) => {
-        const label = document.createElement('label');
-        label.textContent = headers[colIndex];
-        const textarea = document.createElement('textarea');
-        textarea.value = value;
-        textarea.oninput = function() {
-            parsedData[currentRowIndex][colIndex] = textarea.value;
-            displayRows();
-            saveCSVToLocalStorage();
-        };
-        form.appendChild(label);
-        form.appendChild(textarea);
-    });
+                parsedData[index].forEach((value, colIndex) => {
+                    const label = document.createElement('label');
+                    label.textContent = headers[colIndex];
+                    const textarea = document.createElement('textarea');
+                    textarea.value = value;
+                    textarea.oninput = function() {
+                        parsedData[currentRowIndex][colIndex] = textarea.value;
+                        displayRows();
+                        saveCSVToLocalStorage();
+                    };
+                    form.appendChild(label);
+                    form.appendChild(textarea);
+                });
 
-    detailsView.style.display = 'block';
-    updateNavButtons();
-}
-
-
+                detailsView.style.display = 'block';
+                updateNavButtons();
+            }
 
 
 
