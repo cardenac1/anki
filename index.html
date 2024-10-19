@@ -122,16 +122,20 @@ label {
 textarea {
     width: 90%;
     max-width: 800px;
-    resize: vertical;
     padding: 20px;
     background-color: #333333;
     color: #ffffff;
     border: 1px solid #444444;
     border-radius: 8px;
-    font-size: 1.5em; /* Increase font size for mobile editing */
+    font-size: 1.5em;
     margin: 10px auto;
     box-sizing: border-box;
+    overflow-y: hidden; /* Hide vertical scrollbar */
+    resize: none; /* Prevent manual resizing */
 }
+
+
+
 
 .nav-buttons {
     display: flex;
@@ -701,36 +705,60 @@ function resortRows() {
                 }
             }
 
-            function showDetails(index) {
-                currentRowIndex = index;
-                const detailsView = document.getElementById('detailsView');
-                const form = document.getElementById('editForm');
-                form.innerHTML = '';
-
-                parsedData[index].forEach((value, colIndex) => {
-                    const label = document.createElement('label');
-                    label.textContent = headers[colIndex];
-                    const textarea = document.createElement('textarea');
-                    textarea.value = value;
-                    textarea.oninput = function() {
-                        parsedData[currentRowIndex][colIndex] = textarea.value;
-                        displayRows();
-                        saveCSVToLocalStorage();
-                    };
-                    form.appendChild(label);
-                    form.appendChild(textarea);
-                });
-
-                detailsView.style.display = 'block';
-                updateNavButtons();
-            }
 
 
 
-        
+
+// Function to auto-resize a textarea based on its content
+function autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto'; // Reset height so it recalculates
+    textarea.style.height = textarea.scrollHeight + 'px'; // Set height based on content and line breaks
+}
 
 
 
+// Function to handle showing the details
+function showDetails(index) {
+    currentRowIndex = index;
+    const detailsView = document.getElementById('detailsView');
+    const form = document.getElementById('editForm');
+    form.innerHTML = ''; // Clear previous form content
+
+    // Loop through the parsed data for the selected row
+    parsedData[index].forEach((value, colIndex) => {
+        const label = document.createElement('label');
+        label.textContent = headers[colIndex]; // Display the header for each column
+
+        const textarea = document.createElement('textarea');
+        textarea.value = value; // Set the value from the CSV
+
+        // Append the label and textarea to the form
+        form.appendChild(label);
+        form.appendChild(textarea);
+
+        // Delay to ensure the textarea is in the DOM before resizing
+        setTimeout(() => {
+            autoResizeTextarea(textarea); // Resize immediately based on content
+        }, 0); // No delay is necessary, but ensures DOM is ready
+    });
+
+    detailsView.style.display = 'block';
+    updateNavButtons(); // Update the navigation buttons (Previous/Next)
+}
+
+// Function to resize all textareas on page load
+function resizeAllTextareas() {
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        autoResizeTextarea(textarea); // Adjust height to fit content
+    });
+}
+
+// Call this function after loading the CSV to ensure all textareas resize properly
+window.onload = function() {
+    loadCSVFromLocalStorage();
+    setTimeout(resizeAllTextareas, 100); // Resize textareas after a small delay to ensure content is loaded
+};
 
 
         
