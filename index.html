@@ -750,85 +750,87 @@ function autoResizeTextarea(textarea) {
 }
 
 
-function showDetails(index) {
-    currentRowIndex = index; // Set the current row index to match the selected row
-    const detailsView = document.getElementById('detailsView');
-    const form = document.getElementById('editForm');
-    const stickyTextContainer = document.getElementById('stickyTextContainer');
-
-    form.innerHTML = ''; // Clear previous form content
-    stickyTextContainer.innerHTML = ''; // Clear previous sticky text content
-
-    // Loop through the parsed data for the selected row
-    parsedData[index].forEach((value, colIndex) => {
-        if (colIndex === 0) {
-            // Handle the first column as sticky text
-            const stickyText = document.createElement('div');
-            stickyText.textContent = value;
-            stickyTextContainer.appendChild(stickyText);
-        } else {
-            // Create text areas for other columns
-            const label = document.createElement('label');
-            label.textContent = headers[colIndex]; // Display the header for each column
-
-            const textarea = document.createElement('textarea');
-            textarea.value = value; // Set the value from the CSV
-            textarea.setAttribute('data-col-index', colIndex);
-
-            form.appendChild(label);
-            form.appendChild(textarea);
-
-            // Add input listener to resize as user types and save the updated value
-            textarea.addEventListener('input', function () {
-                autoResizeTextarea(this); // Resize dynamically as text changes
-                const colIndex = this.getAttribute('data-col-index');
-                parsedData[currentRowIndex][colIndex] = this.value; // Save the updated data
-                saveCSVToLocalStorage(); // Save changes to local storage
-                displayRows(); // Update the main list to reflect changes
-            });
-        }
-    });
-
-    detailsView.style.display = 'block';
-    updateNavButtons(); // Update the navigation buttons (Previous/Next)
-
-    // Resize text areas after rendering
-    setTimeout(() => {
-        const textareas = form.querySelectorAll('textarea');
-        textareas.forEach(textarea => autoResizeTextarea(textarea));
-    }, 100);
-}
 
 
+   // Updated showDetails function to include a sticky label for the title
+    function showDetails(index) {
+        currentRowIndex = index; // Set the current row index to match the selected row
+        const detailsView = document.getElementById('detailsView');
+        const form = document.getElementById('editForm');
+        const stickyTextContainer = document.getElementById('stickyTextContainer');
 
+        form.innerHTML = ''; // Clear previous form content
 
-        
-// Function to resize all textareas on page load
-function resizeAllTextareas() {
-    const textareas = document.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-        autoResizeTextarea(textarea); // Adjust height to fit content
-    });
-}
+        // Create and set up a sticky label for the title (first column)
+        const title = parsedData[index][0]; // Assuming the first column holds the title
+        stickyTextContainer.innerHTML = `<span class="sticky-title">${title}</span>`; // Set sticky label text
 
-// Call this function after loading the CSV to ensure all textareas resize properly
-window.onload = function () {
-    loadCSVFromLocalStorage();
-    setTimeout(resizeAllTextareas, 100); // Resize textareas after a small delay to ensure content is loaded
-};
+        // Add a text area for the title as the first editable field
+        const titleLabel = document.createElement('label');
+        const titleTextarea = document.createElement('textarea');
+        titleTextarea.value = title; // Set the value from the CSV
+        titleTextarea.setAttribute('data-col-index', 0); // Set the column index for the title
 
-// Update the row list to reflect changes after editing
-function displayRows() {
-    const rowList = document.getElementById('rowList');
-    rowList.innerHTML = '';
-    parsedData.forEach((row, index) => {
-        const listItem = document.createElement('li');
-        listItem.className = 'row-item';
-        listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
-        listItem.onclick = () => showDetails(index);
-        rowList.appendChild(listItem);
-    });
-}
+        form.appendChild(titleLabel);
+        form.appendChild(titleTextarea);
+
+        // Add input listener for resizing the title textarea and saving the updated value
+        titleTextarea.addEventListener('input', function () {
+            autoResizeTextarea(this); // Resize dynamically as text changes
+            const colIndex = this.getAttribute('data-col-index');
+            parsedData[currentRowIndex][colIndex] = this.value; // Save the updated title
+            stickyTextContainer.innerHTML = `<span class="sticky-title">${this.value}</span>`; // Update sticky label
+            saveCSVToLocalStorage(); // Save changes to local storage
+            displayRows(); // Update the main list to reflect changes
+        });
+
+        // Loop through the parsed data for the other columns
+        parsedData[index].forEach((value, colIndex) => {
+            if (colIndex !== 0) { // Skip the first column (title)
+                const label = document.createElement('label');
+                label.textContent = headers[colIndex]; // Display the header for each column
+
+                const textarea = document.createElement('textarea');
+                textarea.value = value; // Set the value from the CSV
+                textarea.setAttribute('data-col-index', colIndex);
+
+                form.appendChild(label);
+                form.appendChild(textarea);
+
+                // Add input listener to resize as user types and save the updated value
+                textarea.addEventListener('input', function () {
+                    autoResizeTextarea(this); // Resize dynamically as text changes
+                    const colIndex = this.getAttribute('data-col-index');
+                    parsedData[currentRowIndex][colIndex] = this.value; // Save the updated data
+                    saveCSVToLocalStorage(); // Save changes to local storage
+                    displayRows(); // Update the main list to reflect changes
+                });
+            }
+        });
+
+        detailsView.style.display = 'block';
+        updateNavButtons(); // Update the navigation buttons (Previous/Next)
+
+        // Resize text areas after rendering
+        setTimeout(() => {
+            const textareas = form.querySelectorAll('textarea');
+            textareas.forEach(textarea => autoResizeTextarea(textarea));
+        }, 100);
+    }
+
+    // Function to auto-resize a textarea based on its content
+    function autoResizeTextarea(textarea) {
+        textarea.style.height = 'auto'; // Reset height so it recalculates
+        textarea.style.height = textarea.scrollHeight + 'px'; // Set height based on content and line breaks
+    }
+
+    // Function to save the CSV data to localStorage
+    function saveCSVToLocalStorage() {
+        const csvContent = Papa.unparse([headers, ...parsedData]);
+        localStorage.setItem('csvData', csvContent);
+        console.log("Data saved to localStorage.");
+    }
+
 
 
 
