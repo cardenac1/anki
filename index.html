@@ -172,7 +172,8 @@ select {
 .column-selector {
     display: flex;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+   gap: 5px;
+    margin-bottom: 10px;
 }
 
 
@@ -338,7 +339,13 @@ select {
 <body>
     <div class="container">
         <input type="file" id="fileInput" accept=".csv">
-        <div class="column-selector" id="columnSelector"></div>
+
+        <div class="dropdown-toggle">
+  <button onclick="toggleColumnDropdown()">⚙️ Row Label Options ▼</button>
+  <div id="columnDropdown" style="display: none; margin-top: 10px;">
+    <div id="columnSelector"></div>
+  </div>
+        </div> 
         <select id="columnSelect" onchange="sortRows()">
             <option value="">Select Column to Sort</option>
         </select>
@@ -831,6 +838,15 @@ function autoResizeTextarea(textarea) {
         console.log("Data saved to localStorage.");
     }
 
+
+
+
+        function toggleColumnDropdown() {
+    const dropdown = document.getElementById('columnDropdown');
+    dropdown.style.display = dropdown.style.display === 'none' || dropdown.style.display === ''
+        ? 'block'
+        : 'none';
+}
 
 
 
