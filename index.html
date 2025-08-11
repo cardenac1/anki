@@ -3,860 +3,894 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Med List</title>
+    <title>Audible Anki</title>
     <style>
-       body {
-    background-color: #121212;
-    color: #ffffff;
-      font-family: monospace, monospace;
-    margin: auto;
-    padding: 20px;
-}
-
-.container {
-    width: 100%;
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-}
-
-
-       .search-container {
-            display: none; /* Hidden by default */
-            margin-top: 10px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        #searchInput {
-            padding: 10px;
-            font-size: 1.1em;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #4a4a6a;
+        }
+
+        .header h1 {
+            color: #64b5f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload {
+            margin: 1rem auto;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .file-input {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #4a4a6a;
+            border-radius: 5px;
+            color: #e0e0e0;
+            width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
             border: none;
-            border-radius: 8px;
-            width: 250px;
-            margin-right: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
 
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
 
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
-        
-button {
-    padding: 10px 20px;
-    background-color: #1976d2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-}
+        .btn.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
 
-button:hover {
-    background-color: #145a9d;
-}
+        .btn.danger:hover {
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
 
+        .btn.secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
 
+        .btn.secondary:hover {
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
 
-        
-        
-h1 {
-    text-align: center;
-    font-size: 2em;
-}
+        .card-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
 
-input[type="file"] {
-    display: block;
-    margin: 20px auto;
-}
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-.row-list {
-    list-style: none;
-    padding: 0;
-}
+        .card-content {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
 
-.row-item {
-    background-color: #1e1e1e;
-    padding: 15px;
-    margin: 8px 0;
-    cursor: pointer;
-    border-radius: 8px;
-    font-size: 1.2em;
-    word-wrap: break-word;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    align-items: center;
-}
+        .card-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
 
-.row-item:hover {
-    background-color: #333333;
-}
+        .card-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
 
-.details-view {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #222222;
-    padding: 20px;
-    overflow-y: auto;
-    box-sizing: border-box;
-    z-index: 1000;
-}
+        .settings {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-#editForm {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-}
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-label {
-    display: block;
-    text-align: center;
-    margin-top: 10px;
-    font-size: 1.2em;
-}
+        .setting-group label {
+            color: #b0b0b0;
+        }
 
-textarea {
-    width: 90%;
-    max-width: 800px;
-    padding: 10px;
-    background-color: #333333;
-    color: #ffffff;
-    border: 1px solid #444444;
-    border-radius: 1px;
-    font-size: 1.5em;
-    margin: 10px auto;
-    box-sizing: border-box;
-    overflow-y: hidden; /* Hide vertical scrollbar */
-    resize: none; /* Prevent manual resizing */
-    font-family: monospace, monospace;
-}
+        .setting-group input, .setting-group select {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #4a4a6a;
+            border-radius: 5px;
+            color: #e0e0e0;
+        }
 
+        .progress {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem;
+        }
 
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            transition: width 0.3s;
+        }
 
+        .auto-mode-indicator {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 10px;
+            margin: 1rem;
+            display: none;
+        }
 
-.nav-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-}
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffc107;
+        }
 
-button {
-    padding: 15px 25px;
-    background-color: #1976d2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1em;
-    cursor: pointer;
-}
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .settings {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .card {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            
+            .card-content {
+                font-size: 1.2rem;
+            }
+        }
 
-button:hover {
-    background-color: #145a9d;
-}
+        .hidden {
+            display: none !important;
+        }
 
-select {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #333333;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1em;
-}
+        .speaking {
+            animation: pulse 1.5s infinite;
+        }
 
-.column-selector {
-    display: flex;
-    flex-wrap: wrap;
-   gap: 5px;
-    margin-bottom: 10px;
-}
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
 
-
-
-
-        .column-button {
-    padding: 8px; /* Smaller padding */
-    margin: 5px;
-    background-color: #444444;
-    border: 1px solid #666666;
-    border-radius: 8px;
-    cursor: pointer;
-    color: white;
-    font-size: 0.9em; /* Decrease font size */
-    text-align: center;
-    flex: 1 0 22%;
-    box-sizing: border-box;
-}
-
-
-
-        
-
-.column-button.selected {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-#exportButton {
-    position: flex;
-    top: 20px;
-    right: 20px;
-    z-index: 999;
-    padding: 10px 20px;
-    background-color: #1976d2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    cursor: pointer;
-}
-
-
-
-
-        .sticky-text {
-    position: sticky;
-    top: 0;
-    background-color: #222222;
-    padding: 10px;
-    font-size: 1.5em;
-    text-align: center;
-    z-index: 10;
-    border-bottom: 1px solid #444444;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
-}
-
-
-
-        
-/* Light Color Scheme */
-.colored-text-1 { color: #00e5ff; }
-.colored-text-2 { color: #f26363; }
-.colored-text-3 { color: #79e89f; }
-.colored-text-4 { color: #ffffff; }
-.colored-text-5 { color: #ff8000; }
-.colored-text-6 { color: #f6ff00; }
-.colored-text-7 { color: #da05ff; }
-.colored-text-8 { color: #7a05ff; }
-.colored-text-9 { color: #9ab6e2; }
-.colored-text-10 { color: #f5a623; }
-
-/* Delete Button */
-.delete-button {
-    background-color: #e53935;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
-.delete-button:hover {
-    background-color: #c62828;
-}
-
-/* Modal for adding new entry */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding-top: 60px;
-}
-
-.modal-content {
-    background-color: #333333;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    color: white;
-    border-radius: 8px;
-}
-
-
-
-
-/* Media Queries for Mobile */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-
-    textarea {
-        font-size: 1.4em; /* Increase size for mobile */
-    }
-
-    button, select {
-        width: 100%;
-        font-size: 1.1em;
-    }
-
-    .row-item {
-        font-size: 1em;
-        grid-template-columns: repeat(1, 1fr);
-    }
-
-    .column-button {
-        flex: 1 0 46%;
-    }
-
-}
-
-@media (max-width: 480px) {
-    textarea {
-        font-size: 1.2em; /* Further increase for small screens */
-    }
-
-    .modal-content {
-        width: 95%; /* Make modal full width on small screens */
-    }
-}
-
-
-
-
-
-
-
-
-
-        
-
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <input type="file" id="fileInput" accept=".csv">
-
-        <div class="dropdown-toggle">
-  <button onclick="toggleColumnDropdown()">Columns ▼</button>
-  <div id="columnDropdown" style="display: none; margin-top: 10px;">
-    <div id="columnSelector"></div>
-  </div>
-        </div> 
-        <select id="columnSelect" onchange="sortRows()">
-            <option value="">Select Column to Sort</option>
-        </select>
+    <!-- Load required libraries for .apkg support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <div class="header">
+        <h1>🔊 Audible Anki</h1>
+        <p>Text-to-Speech Flashcard Learning</p>
+        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid #ffc107;">
         
-            <!-- Button to toggle the search field -->
-            <button onclick="toggleSearch()">Search</button>
 
-            <!-- Search input, Enter button, and Clear button (initially hidden) -->
-            <div id="searchContainer" class="search-container">
-                <input type="text" id="searchInput" placeholder="Type your search..." />
-                <button onclick="searchRows()">Enter</button>
-                <button onclick="clearSearch()">Clear</button>
-            </div>
-
-
-    
-<button onclick="resortRows()">Re-sort</button>
-                <!-- Add Entry Button -->
-        <button onclick="showAddEntryModal()">Add New Entry</button>
- <button id="exportButtonMain" onclick="exportCSV()">Export CSV</button>
-        <!-- Add this button somewhere appropriate in your HTML, for example near the export button or below the sort dropdown -->
-        
-        
-        <ul class="row-list" id="rowList"></ul>
-        <!-- Search Bar Section -->
-
-
-
-
-        <!-- Add Entry Modal -->
-        <div id="addEntryModal" class="modal">
-            <div class="modal-content">
-                <h2>Add New Entry</h2>
-                <form id="addEntryForm" onsubmit="addEntry(event)">
-                    <div id="newEntryFields"></div>
-                    <button type="submit">Save Entry</button>
-                    <button type="button" onclick="closeAddEntryModal()">Cancel</button>
-                </form>
-            </div>
+    <div class="file-upload" id="fileUpload">
+        <h3>Load Anki Cards</h3>
+        <p>Upload an Anki .txt export file (tab-separated) or .apkg package file with media</p>
+        <div style="font-size: 0.9rem; color: #b0b0b0; margin: 1rem 0;">
+            <strong>.apkg files:</strong> Full Anki deck with images, audio, and all formatting<br>
+            <strong>.txt files:</strong> Simple export (File → Export → Notes in Plain Text)
         </div>
-
-
-
-        
-
-        <div class="details-view" id="detailsView">
-            <div class="details-header">
-                <button onclick="backToList()">Back to List</button> 
-            </div>
-
-            <div id="stickyTextContainer" class="sticky-text"></div>
-
-            <form id="editForm"></form>
-            <div class="nav-buttons">
-                <button id="prevButton" onclick="navigateDetails(-1)">Previous</button>
-                <button id="nextButton" onclick="navigateDetails(1)">Next</button>
-                 <button onclick="backToList()">Back to List</button>
-            </div>
-            
-            <br> </br>
-            
-    <div>
-            <button id="exportButton" onclick="exportCSV()">Export CSV</button>
-    </div>
-            
-            <button class="delete-button" onclick="deleteCurrentEntry()">Delete Entry</button>
+        <input type="file" id="fileInput" class="file-input" accept=".txt,.apkg" />
+        <button onclick="loadFile()" class="btn">Load Cards</button>
+        <div id="loadingIndicator" style="display: none; margin-top: 1rem; color: #64b5f6;">
+            <div style="display: inline-block; animation: spin 1s linear infinite;">⏳</div>
+            Loading .apkg file...
         </div>
     </div>
 
-    <!-- Include Papa Parse from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <div class="settings">
+        <div class="setting-group">
+            <label for="pauseTime">Auto Pause (seconds):</label>
+            <input type="number" id="pauseTime" value="10" min="1" max="60" />
+        </div>
+        <div class="setting-group">
+            <label for="voiceSelect">Voice:</label>
+            <select id="voiceSelect">
+                <option value="">Loading voices...</option>
+            </select>
+            <button onclick="testVoice()" class="btn" style="padding: 0.5rem; margin-left: 0.5rem;">Test</button>
+        </div>
+        <div class="setting-group">
+            <label for="speechRate">Speech Rate:</label>
+            <select id="speechRate">
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+            </select>
+        </div>
+        <div class="setting-group">
+            <label for="randomize">Randomize:</label>
+            <input type="checkbox" id="randomize" />
+        </div>
+    </div>
+
+    <div class="controls hidden" id="controls">
+        <button onclick="previousCard()" class="btn secondary">⬅️ Previous</button>
+        <button onclick="showAnswer()" class="btn" id="showBtn">Show Answer</button>
+        <button onclick="nextCard()" class="btn secondary">Next ➡️</button>
+        <button onclick="toggleAutoMode()" class="btn" id="autoBtn">🔄 Auto Mode</button>
+        <button onclick="stopSpeech()" class="btn danger">🔇 Stop Speech</button>
+    </div>
+
+    <div class="auto-mode-indicator" id="autoIndicator">
+        <div>Auto Mode Active</div>
+        <div class="timer" id="timer"></div>
+    </div>
+
+    <div class="progress hidden" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="card-container">
+        <div class="card hidden" id="cardContainer">
+            <div class="card-info" id="cardInfo"></div>
+            <div class="card-content" id="cardContent"></div>
+        </div>
+    </div>
 
     <script>
-        let parsedData = [];
-        let headers = [];
-        let currentRowIndex = -1;
-        let selectedColumns = [0, 1, 2];
+        let cards = [];
+        let currentCardIndex = 0;
+        let showingBack = false;
+        let autoMode = false;
+        let autoTimer = null;
+        let countdownTimer = null;
+        let currentUtterance = null;
+        let voices = [];
+        let mediaFiles = {}; // Store media files as blob URLs
 
-        const colors = [
-            'colored-text-1', 'colored-text-2', 'colored-text-3',
-            'colored-text-4', 'colored-text-5', 'colored-text-6',
-            'colored-text-7', 'colored-text-8', 'colored-text-9',
-            'colored-text-10'
-        ];
-
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                Papa.parse(file, {
-                    complete: function(results) {
-                        parsedData = results.data.slice(1);
-                        headers = results.data[0];
-                        populateColumnSelector();
-                        populateColumnSelect();
-                        displayRows();
-                        saveCSVToLocalStorage();
-                    },
-                    error: function(error) {
-                        console.error('Error parsing CSV:', error);
-                    },
-                    header: false,
-                    skipEmptyLines: true
-                });
-            }
-        });
-
-        function populateColumnSelector() {
-            const columnSelector = document.getElementById('columnSelector');
-            columnSelector.innerHTML = '';
-            headers.forEach((header, colIndex) => {
-                const button = document.createElement('div');
-                button.className = 'column-button';
-                button.textContent = header;
-                if (selectedColumns.includes(colIndex)) {
-                    button.classList.add('selected');
-                }
-                button.onclick = () => toggleColumnSelection(colIndex, button);
-                columnSelector.appendChild(button);
-            });
+        // Check for speech synthesis support
+        if (!('speechSynthesis' in window)) {
+            alert('Your browser does not support text-to-speech. Please use a modern browser.');
         }
 
-        function toggleColumnSelection(colIndex, button) {
-            if (selectedColumns.includes(colIndex)) {
-                selectedColumns = selectedColumns.filter(col => col !== colIndex);
-                button.classList.remove('selected');
-            } else {
-                selectedColumns.push(colIndex);
-                button.classList.add('selected');
-            }
-            displayRows();
-        }
+        // Load available voices
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
 
-        function populateColumnSelect() {
-            const columnSelect = document.getElementById('columnSelect');
-            columnSelect.innerHTML = '<option value="">Select Column to Sort</option>';
-            headers.forEach((header, colIndex) => {
-                const option = document.createElement('option');
-                option.value = colIndex;
-                option.textContent = header;
-                columnSelect.appendChild(option);
-            });
-        }
-
-        function displayRows() {
-            const rowList = document.getElementById('rowList');
-            rowList.innerHTML = '';
-            parsedData.forEach((row, index) => {
-                const listItem = document.createElement('li');
-                listItem.className = 'row-item';
-                listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
-                listItem.onclick = () => showDetails(index);
-                rowList.appendChild(listItem);
-            });
-        }
-
-        function sortRows() {
-            const columnIndex = document.getElementById('columnSelect').value;
-            if (columnIndex !== "") {
-                parsedData.sort((a, b) => {
-                    const valueA = a[columnIndex] ? a[columnIndex].toLowerCase() : "";
-                    const valueB = b[columnIndex] ? b[columnIndex].toLowerCase() : "";
-
-                    if (valueA === "" && valueB === "") return 0;
-                    if (valueA === "") return 1;
-                    if (valueB === "") return -1;
-
-                    return valueA.localeCompare(valueB);
-                });
-                displayRows();
-            }
-        }
-
-
-
-        function navigateDetails(step) {
-            const newIndex = currentRowIndex + step;
-            if (newIndex >= 0 && newIndex < parsedData.length) {
-                showDetails(newIndex);
-            }
-        }
-
-        function updateNavButtons() {
-            document.getElementById('prevButton').disabled = currentRowIndex === 0;
-            document.getElementById('nextButton').disabled = currentRowIndex === parsedData.length - 1;
-        }
-
-        function backToList() {
-            document.getElementById('detailsView').style.display = 'none';
-        }
-
-        function exportCSV() {
-            const now = new Date();
-            const formattedDate = String(now.getMonth() + 1).padStart(2, '0') + "." +
-                String(now.getDate()).padStart(2, '0') + "." +
-                String(now.getFullYear()).slice(-2);
-
-            const filename = `list_${formattedDate}.csv`;
-            const csvContent = Papa.unparse([headers, ...parsedData]);
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.setAttribute('href', URL.createObjectURL(blob));
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function deleteCurrentEntry() {
-            if (currentRowIndex !== -1) {
-                const confirmDeletion = confirm("Are you sure you want to delete this entry?");
-                if (confirmDeletion) {
-                    parsedData.splice(currentRowIndex, 1);
-                    backToList();
-                    displayRows();
-                    saveCSVToLocalStorage();
-                } else {
-                    console.log("Deletion canceled");
-                }
-            }
-        }
-
-        function addEntry(event) {
-            event.preventDefault();
-            const newEntry = [];
-            const fields = document.querySelectorAll('#newEntryFields input');
-            fields.forEach((field) => {
-                newEntry.push(field.value.trim());
-                field.value = '';
-            });
-
-            if (newEntry.every((value) => value === '')) {
-                alert('Please fill out at least one field.');
+            if (voices.length === 0) {
+                voiceSelect.innerHTML = '<option value="">No voices available</option>';
                 return;
             }
 
-            parsedData.push(newEntry);
-            displayRows();
-            saveCSVToLocalStorage();
-            closeAddEntryModal();
-        }
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Default Voice';
+            voiceSelect.appendChild(defaultOption);
 
-        function generateNewEntryFields() {
-            const newEntryFields = document.getElementById('newEntryFields');
-            newEntryFields.innerHTML = '';
+            // Group voices by language and quality
+            const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+            const otherVoices = voices.filter(voice => !voice.lang.startsWith('en'));
 
-            headers.forEach((header) => {
-                const input = document.createElement('input');
-                input.placeholder = header;
-                newEntryFields.appendChild(input);
+            // Add English voices first (prioritize neural/premium voices)
+            englishVoices.sort((a, b) => {
+                const aQuality = (a.name.includes('Neural') || a.name.includes('Premium') || a.name.includes('Enhanced')) ? 0 : 1;
+                const bQuality = (b.name.includes('Neural') || b.name.includes('Premium') || b.name.includes('Enhanced')) ? 0 : 1;
+                return aQuality - bQuality || a.name.localeCompare(b.name);
             });
+
+            englishVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                const quality = (voice.name.includes('Neural') || voice.name.includes('Premium') || voice.name.includes('Enhanced')) ? ' ⭐' : '';
+                option.textContent = `${voice.name} (${voice.lang})${quality}`;
+                voiceSelect.appendChild(option);
+            });
+
+            // Add separator if there are other languages
+            if (otherVoices.length > 0) {
+                const separator = document.createElement('option');
+                separator.disabled = true;
+                separator.textContent = '--- Other Languages ---';
+                voiceSelect.appendChild(separator);
+
+                otherVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                });
+            }
+
+            // Auto-select a high-quality English voice if available
+            const preferredVoice = englishVoices.find(voice => 
+                voice.name.includes('Neural') || voice.name.includes('Premium') || voice.name.includes('Enhanced')
+            );
+            if (preferredVoice) {
+                voiceSelect.value = preferredVoice.name;
+            }
         }
 
-        function showAddEntryModal() {
-            document.getElementById('addEntryModal').style.display = 'block';
-            generateNewEntryFields();
-        }
+        // Load voices when they become available
+        speechSynthesis.addEventListener('voiceschanged', loadVoices);
+        loadVoices(); // Try loading immediately
 
-        function closeAddEntryModal() {
-            document.getElementById('addEntryModal').style.display = 'none';
-        }
+        function loadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file first.');
+                return;
+            }
 
-        function saveCSVToLocalStorage() {
-            const csvContent = Papa.unparse([headers, ...parsedData]);
-            localStorage.setItem('csvData', csvContent);
-            console.log("Data saved to localStorage.");
-        }
-
-        function loadCSVFromLocalStorage() {
-            const savedData = localStorage.getItem('csvData');
-            if (savedData) {
-                const results = Papa.parse(savedData, { header: false });
-                parsedData = results.data.slice(1);
-                headers = results.data[0];
-
-                populateColumnSelector();
-                populateColumnSelect();
-                displayRows();
-                console.log("Data loaded from localStorage.");
+            const fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.txt')) {
+                loadTextFile(file);
+            } else if (fileName.endsWith('.apkg')) {
+                loadApkgFile(file);
             } else {
-                console.log("No saved data found in localStorage.");
+                alert('Please select a .txt or .apkg file.');
             }
         }
 
-        window.onload = function() {
-            loadCSVFromLocalStorage();
-        };
+        function loadTextFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseTextCards(content);
+            };
+            reader.readAsText(file);
+        }
 
+        async function loadApkgFile(file) {
+            try {
+                document.getElementById('fileInput').disabled = true;
+                const loadBtn = document.querySelector('button[onclick="loadFile()"]');
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                
+                loadBtn.textContent = 'Loading...';
+                loadBtn.disabled = true;
+                loadingIndicator.style.display = 'block';
 
-
-
-
-        
-function resortRows() {
-    // Get the current column index from the selected option
-    const columnIndex = document.getElementById('columnSelect').value;
-    
-    if (columnIndex !== "") {
-        // Re-apply the sorting logic based on the selected column index
-        parsedData.sort((a, b) => {
-            let valueA = a[columnIndex] ? a[columnIndex].toLowerCase() : "";
-            let valueB = b[columnIndex] ? b[columnIndex].toLowerCase() : "";
-
-            // Sort blanks to the bottom
-            if (valueA === "" && valueB === "") return 0;
-            if (valueA === "") return 1;
-            if (valueB === "") return -1;
-
-            // Check if both values are numbers and sort numerically if so
-            const numA = parseFloat(valueA);
-            const numB = parseFloat(valueB);
-
-            if (!isNaN(numA) && !isNaN(numB)) {
-                // Both are numbers, so compare them numerically
-                return numA - numB;
-            }
-
-            // If not both numbers, sort alphabetically
-            return valueA.localeCompare(valueB);
-        });
-
-        // Redisplay the rows after sorting
-        displayRows();
-    }
-}
-
-
-
-
-
-
-
-        
-
-
-
-        
- function toggleSearch() {
-                const searchContainer = document.getElementById('searchContainer');
-                if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
-                    searchContainer.style.display = 'block'; // Show the search input
-                    document.getElementById('searchInput').focus(); // Focus on the input when it appears
-                } else {
-                    searchContainer.style.display = 'none'; // Hide the search input
-                }
-            }
-
-            function searchRows() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                filteredIndexes = []; // Reset the filtered index array
-
-                if (!searchTerm) {
-                    alert("Please enter a search term.");
-                    return;
-                }
-
-                // Filter the parsedData based on the search term
-                const filteredData = parsedData.filter((row, index) => {
-                    const matchFound = row.some(colValue => colValue.toLowerCase().includes(searchTerm));
-                    if (matchFound) {
-                        filteredIndexes.push(index); // Track the index of the filtered data
-                    }
-                    return matchFound;
+                const arrayBuffer = await file.arrayBuffer();
+                const zip = await JSZip.loadAsync(arrayBuffer);
+                
+                // Initialize SQL.js
+                const SQL = await initSqlJs({
+                    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
                 });
 
-                if (filteredData.length > 0) {
-                    displayFilteredRows(filteredData);
-                } else {
-                    displayFilteredRows([]);
+                // Extract media files
+                mediaFiles = {};
+                for (const [filename, zipEntry] of Object.entries(zip.files)) {
+                    if (!zipEntry.dir && filename !== 'collection.anki2') {
+                        const blob = await zipEntry.async('blob');
+                        mediaFiles[filename] = URL.createObjectURL(blob);
+                    }
                 }
+
+                // Read the database
+                const dbFile = zip.files['collection.anki2'];
+                if (!dbFile) {
+                    throw new Error('No collection.anki2 found in .apkg file');
+                }
+
+                const dbArrayBuffer = await dbFile.async('arraybuffer');
+                const db = new SQL.Database(new Uint8Array(dbArrayBuffer));
+
+                parseApkgCards(db);
+                
+            } catch (error) {
+                console.error('Error loading .apkg file:', error);
+                alert('Error loading .apkg file: ' + error.message);
+            } finally {
+                document.getElementById('fileInput').disabled = false;
+                const loadBtn = document.querySelector('button[onclick="loadFile()"]');
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                
+                loadBtn.textContent = 'Load Cards';
+                loadBtn.disabled = false;
+                loadingIndicator.style.display = 'none';
             }
+        }
 
-            function clearSearch() {
-                document.getElementById('searchInput').value = '';
-                displayRows(); // Go back to displaying the original full data
-                document.getElementById('searchContainer').style.display = 'none'; // Hide search input after clearing
-            }
+        function parseTextCards(content) {
+            const lines = content.split('\n').filter(line => line.trim());
+            cards = [];
 
-            function displayFilteredRows(filteredData) {
-                const rowList = document.getElementById('rowList');
-                rowList.innerHTML = ''; // Clear current rows
-
-                if (filteredData.length === 0) {
-                    const noResultsItem = document.createElement('li');
-                    noResultsItem.className = 'row-item';
-                    noResultsItem.style.textAlign = 'center';
-                    noResultsItem.style.fontSize = '1.2em';
-                    noResultsItem.style.color = '#ff5c5c';
-                    noResultsItem.textContent = 'No results found';
-                    rowList.appendChild(noResultsItem);
-                } else {
-                    filteredData.forEach((row, filteredIndex) => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'row-item';
-                        listItem.innerHTML = `${selectedColumns.map((colIndex, idx) => `<span class="${colors[idx % colors.length]}">${row[colIndex]}</span>`).join(' ')}`;
-                        listItem.onclick = () => showDetails(filteredIndexes[filteredIndex]);
-                        rowList.appendChild(listItem);
+            for (let line of lines) {
+                const parts = line.split('\t');
+                if (parts.length >= 2) {
+                    cards.push({
+                        front: parts[0].trim(),
+                        back: parts[1].trim()
                     });
                 }
             }
 
+            if (cards.length === 0) {
+                alert('No valid cards found. Make sure your file is tab-separated with Front[TAB]Back format.');
+                return;
+            }
 
+            initializeApp();
+        }
 
+        function parseApkgCards(db) {
+            try {
+                cards = [];
+                
+                // First, let's see what tables exist
+                const tablesStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table';");
+                const tables = [];
+                while (tablesStmt.step()) {
+                    tables.push(tablesStmt.getAsObject().name);
+                }
+                tablesStmt.free();
+                console.log('Available tables:', tables);
+                
+                // Simple approach: get notes directly
+                const notesStmt = db.prepare('SELECT flds FROM notes ORDER BY id');
+                
+                while (notesStmt.step()) {
+                    const row = notesStmt.getAsObject();
+                    const fields = row.flds;
+                    
+                    if (fields) {
+                        const fieldArray = fields.split('\x1f'); // Anki uses \x1f as field separator
+                        
+                        if (fieldArray.length >= 2) {
+                            cards.push({
+                                front: fieldArray[0] || '',
+                                back: fieldArray[1] || ''
+                            });
+                        } else if (fieldArray.length === 1 && fieldArray[0].trim()) {
+                            // Single field - use as front, empty back
+                            cards.push({
+                                front: fieldArray[0] || '',
+                                back: '(No back content)'
+                            });
+                        }
+                    }
+                }
+                
+                notesStmt.free();
+                
+                // If no cards found, try alternative approach
+                if (cards.length === 0) {
+                    console.log('No notes found, trying cards table...');
+                    
+                    // Try getting cards and joining with notes
+                    try {
+                        const cardsStmt = db.prepare(`
+                            SELECT DISTINCT n.flds 
+                            FROM cards c 
+                            JOIN notes n ON c.nid = n.id 
+                            ORDER BY c.id
+                        `);
+                        
+                        while (cardsStmt.step()) {
+                            const row = cardsStmt.getAsObject();
+                            const fields = row.flds;
+                            
+                            if (fields) {
+                                const fieldArray = fields.split('\x1f');
+                                
+                                if (fieldArray.length >= 2) {
+                                    cards.push({
+                                        front: fieldArray[0] || '',
+                                        back: fieldArray[1] || ''
+                                    });
+                                }
+                            }
+                        }
+                        
+                        cardsStmt.free();
+                    } catch (e) {
+                        console.error('Cards table approach failed:', e);
+                    }
+                }
+                
+                db.close();
 
-// Function to auto-resize a textarea based on its content
-function autoResizeTextarea(textarea) {
-    textarea.style.height = 'auto'; // Reset height so it recalculates
-    textarea.style.height = textarea.scrollHeight + 'px'; // Set height based on content and line breaks
-}
+                if (cards.length === 0) {
+                    alert('No cards found in the .apkg file. The file might be empty or use an unsupported format.');
+                    return;
+                }
 
+                console.log(`Successfully loaded ${cards.length} cards from .apkg file`);
+                initializeApp();
+                
+            } catch (error) {
+                console.error('Error parsing .apkg cards:', error);
+                alert('Error parsing cards from .apkg file: ' + error.message + '\n\nTry exporting your deck as a .txt file instead.');
+            }
+        }
 
+        function initializeApp() {
+            document.getElementById('fileUpload').classList.add('hidden');
+            document.getElementById('controls').classList.remove('hidden');
+            document.getElementById('progressContainer').classList.remove('hidden');
+            document.getElementById('cardContainer').classList.remove('hidden');
 
+            if (document.getElementById('randomize').checked) {
+                shuffleCards();
+            }
 
-   // Updated showDetails function to include a sticky label for the title
-    function showDetails(index) {
-        currentRowIndex = index; // Set the current row index to match the selected row
-        const detailsView = document.getElementById('detailsView');
-        const form = document.getElementById('editForm');
-        const stickyTextContainer = document.getElementById('stickyTextContainer');
+            currentCardIndex = 0;
+            showCard();
+            updateProgress();
+        }
 
-        form.innerHTML = ''; // Clear previous form content
+        function shuffleCards() {
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+        }
 
-        // Create and set up a sticky label for the title (first column)
-        const title = parsedData[index][0]; // Assuming the first column holds the title
-        stickyTextContainer.innerHTML = `<span class="sticky-title">${title}</span>`; // Set sticky label text
+        function showCard() {
+            if (cards.length === 0) return;
 
-        // Add a text area for the title as the first editable field
-        const titleLabel = document.createElement('label');
-        const titleTextarea = document.createElement('textarea');
-        titleTextarea.value = title; // Set the value from the CSV
-        titleTextarea.setAttribute('data-col-index', 0); // Set the column index for the title
+            showingBack = false;
+            const card = cards[currentCardIndex];
+            const cardContent = document.getElementById('cardContent');
+            const cardInfo = document.getElementById('cardInfo');
+            const showBtn = document.getElementById('showBtn');
 
-        form.appendChild(titleLabel);
-        form.appendChild(titleTextarea);
+            cardInfo.textContent = `Card ${currentCardIndex + 1} of ${cards.length}`;
+            cardContent.innerHTML = processContent(card.front);
+            showBtn.textContent = 'Show Answer';
+            showBtn.disabled = false;
 
-        // Add input listener for resizing the title textarea and saving the updated value
-        titleTextarea.addEventListener('input', function () {
-            autoResizeTextarea(this); // Resize dynamically as text changes
-            const colIndex = this.getAttribute('data-col-index');
-            parsedData[currentRowIndex][colIndex] = this.value; // Save the updated title
-            stickyTextContainer.innerHTML = `<span class="sticky-title">${this.value}</span>`; // Update sticky label
-            saveCSVToLocalStorage(); // Save changes to local storage
-            displayRows(); // Update the main list to reflect changes
-        });
+            updateProgress();
 
-        // Loop through the parsed data for the other columns
-        parsedData[index].forEach((value, colIndex) => {
-            if (colIndex !== 0) { // Skip the first column (title)
-                const label = document.createElement('label');
-                label.textContent = headers[colIndex]; // Display the header for each column
+            if (!autoMode) {
+                speak(card.front);
+            }
+        }
 
-                const textarea = document.createElement('textarea');
-                textarea.value = value; // Set the value from the CSV
-                textarea.setAttribute('data-col-index', colIndex);
+        function showAnswer() {
+            if (showingBack || cards.length === 0) return;
 
-                form.appendChild(label);
-                form.appendChild(textarea);
+            showingBack = true;
+            const card = cards[currentCardIndex];
+            const cardContent = document.getElementById('cardContent');
+            const showBtn = document.getElementById('showBtn');
 
-                // Add input listener to resize as user types and save the updated value
-                textarea.addEventListener('input', function () {
-                    autoResizeTextarea(this); // Resize dynamically as text changes
-                    const colIndex = this.getAttribute('data-col-index');
-                    parsedData[currentRowIndex][colIndex] = this.value; // Save the updated data
-                    saveCSVToLocalStorage(); // Save changes to local storage
-                    displayRows(); // Update the main list to reflect changes
-                });
+            cardContent.innerHTML = processContent(card.back);
+            showBtn.textContent = 'Next Card';
+            showBtn.onclick = nextCard;
+
+            speak(card.back);
+        }
+
+        function processContent(content) {
+            // Handle Anki media references
+            content = content.replace(/\[sound:(.*?)\]/g, (match, filename) => {
+                const mediaUrl = mediaFiles[filename];
+                return mediaUrl ? `<audio controls><source src="${mediaUrl}"></audio>` : match;
+            });
+            
+            // Handle image references
+            content = content.replace(/<img[^>]*src="([^"]*)"[^>]*>/g, (match, filename) => {
+                const mediaUrl = mediaFiles[filename];
+                return mediaUrl ? match.replace(filename, mediaUrl) : match;
+            });
+            
+            // Handle direct media references
+            Object.keys(mediaFiles).forEach(filename => {
+                const regex = new RegExp(`\\b${filename}\\b`, 'g');
+                content = content.replace(regex, mediaFiles[filename]);
+            });
+            
+            // Clean up any remaining Anki formatting
+            content = content.replace(/\{\{c\d+::(.*?)\}\}/g, '$1'); // Cloze deletions
+            content = content.replace(/\{\{(.*?)\}\}/g, '$1'); // Template fields
+            
+            return content;
+        }
+
+        function speak(text) {
+            stopSpeech();
+            
+            // Clean up HTML and entities for speech
+            let cleanText = text;
+            
+            // Remove HTML tags
+            cleanText = cleanText.replace(/<[^>]*>/g, ' ');
+            
+            // Convert HTML entities to readable text
+            cleanText = cleanText.replace(/&nbsp;/gi, ' ');
+            cleanText = cleanText.replace(/&amp;/gi, 'and');
+            cleanText = cleanText.replace(/&lt;/gi, 'less than');
+            cleanText = cleanText.replace(/&gt;/gi, 'greater than');
+            cleanText = cleanText.replace(/&quot;/gi, '"');
+            cleanText = cleanText.replace(/&#39;/gi, "'");
+            cleanText = cleanText.replace(/&apos;/gi, "'");
+            cleanText = cleanText.replace(/&mdash;/gi, ' - ');
+            cleanText = cleanText.replace(/&ndash;/gi, ' - ');
+            cleanText = cleanText.replace(/&hellip;/gi, '...');
+            cleanText = cleanText.replace(/&copy;/gi, 'copyright');
+            cleanText = cleanText.replace(/&reg;/gi, 'registered');
+            cleanText = cleanText.replace(/&trade;/gi, 'trademark');
+            
+            // Remove any remaining HTML entities (&#123; or &something;)
+            cleanText = cleanText.replace(/&#\d+;/g, ' ');
+            cleanText = cleanText.replace(/&[a-zA-Z]+;/g, ' ');
+            
+            // Clean up extra whitespace
+            cleanText = cleanText.replace(/\s+/g, ' ').trim();
+            
+            // Remove Anki-specific formatting that shouldn't be spoken
+            cleanText = cleanText.replace(/\[\[.*?\]\]/g, ''); // Remove [[brackets]]
+            cleanText = cleanText.replace(/\{\{.*?\}\}/g, ''); // Remove {{brackets}}
+            cleanText = cleanText.replace(/\[sound:.*?\]/g, ''); // Remove [sound:...] references
+            
+            if (cleanText.trim()) {
+                currentUtterance = new SpeechSynthesisUtterance(cleanText);
+                currentUtterance.rate = parseFloat(document.getElementById('speechRate').value);
+                
+                // Set selected voice
+                const selectedVoiceName = document.getElementById('voiceSelect').value;
+                if (selectedVoiceName) {
+                    const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
+                    if (selectedVoice) {
+                        currentUtterance.voice = selectedVoice;
+                    }
+                }
+                
+                document.getElementById('cardContent').classList.add('speaking');
+                
+                currentUtterance.onend = function() {
+                    document.getElementById('cardContent').classList.remove('speaking');
+                };
+                
+                currentUtterance.onerror = function(event) {
+                    console.error('Speech synthesis error:', event);
+                    document.getElementById('cardContent').classList.remove('speaking');
+                };
+                
+                speechSynthesis.speak(currentUtterance);
+            }
+        }
+
+        function stopSpeech() {
+            speechSynthesis.cancel();
+            document.getElementById('cardContent').classList.remove('speaking');
+            currentUtterance = null;
+        }
+
+        function testVoice() {
+            speak("Hello! This is how I will sound when reading your flashcards. How do you like this voice?");
+        }
+
+        function nextCard() {
+            if (cards.length === 0) return;
+
+            stopAutoMode();
+            currentCardIndex = (currentCardIndex + 1) % cards.length;
+            showCard();
+
+            // Reset show button
+            const showBtn = document.getElementById('showBtn');
+            showBtn.onclick = showAnswer;
+        }
+
+        function previousCard() {
+            if (cards.length === 0) return;
+
+            stopAutoMode();
+            currentCardIndex = (currentCardIndex - 1 + cards.length) % cards.length;
+            showCard();
+
+            // Reset show button
+            const showBtn = document.getElementById('showBtn');
+            showBtn.onclick = showAnswer;
+        }
+
+        function toggleAutoMode() {
+            if (autoMode) {
+                stopAutoMode();
+            } else {
+                startAutoMode();
+            }
+        }
+
+        function startAutoMode() {
+            if (cards.length === 0) return;
+
+            autoMode = true;
+            document.getElementById('autoBtn').textContent = '⏹️ Stop Auto';
+            document.getElementById('autoIndicator').style.display = 'block';
+            document.getElementById('showBtn').disabled = true;
+
+            runAutoSequence();
+        }
+
+        function stopAutoMode() {
+            autoMode = false;
+            document.getElementById('autoBtn').textContent = '🔄 Auto Mode';
+            document.getElementById('autoIndicator').style.display = 'none';
+            document.getElementById('showBtn').disabled = false;
+
+            if (autoTimer) {
+                clearTimeout(autoTimer);
+                autoTimer = null;
+            }
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+        }
+
+        function runAutoSequence() {
+            if (!autoMode || cards.length === 0) return;
+
+            const card = cards[currentCardIndex];
+            
+            // Show and speak front
+            showCard();
+            speak(card.front);
+
+            // Start countdown
+            let timeLeft = parseInt(document.getElementById('pauseTime').value);
+            const timerElement = document.getElementById('timer');
+            
+            countdownTimer = setInterval(() => {
+                timerElement.textContent = timeLeft;
+                timeLeft--;
+                
+                if (timeLeft < 0) {
+                    clearInterval(countdownTimer);
+                    
+                    // Show and speak back
+                    showAnswer();
+                    
+                    // Move to next card after a pause
+                    autoTimer = setTimeout(() => {
+                        if (autoMode) {
+                            nextCard();
+                            if (autoMode) {
+                                runAutoSequence();
+                            }
+                        }
+                    }, 3000);
+                }
+            }, 1000);
+        }
+
+        function updateProgress() {
+            if (cards.length === 0) return;
+
+            const progress = ((currentCardIndex + 1) / cards.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('cardContainer').classList.contains('hidden')) return;
+
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    if (!showingBack) {
+                        showAnswer();
+                    } else {
+                        nextCard();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    previousCard();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    nextCard();
+                    break;
+                case 'KeyA':
+                    e.preventDefault();
+                    toggleAutoMode();
+                    break;
+                case 'KeyS':
+                    e.preventDefault();
+                    stopSpeech();
+                    break;
             }
         });
 
-        detailsView.style.display = 'block';
-        updateNavButtons(); // Update the navigation buttons (Previous/Next)
-
-        // Resize text areas after rendering
-        setTimeout(() => {
-            const textareas = form.querySelectorAll('textarea');
-            textareas.forEach(textarea => autoResizeTextarea(textarea));
-        }, 100);
-    }
-
-    // Function to auto-resize a textarea based on its content
-    function autoResizeTextarea(textarea) {
-        textarea.style.height = 'auto'; // Reset height so it recalculates
-        textarea.style.height = textarea.scrollHeight + 'px'; // Set height based on content and line breaks
-    }
-
-    // Function to save the CSV data to localStorage
-    function saveCSVToLocalStorage() {
-        const csvContent = Papa.unparse([headers, ...parsedData]);
-        localStorage.setItem('csvData', csvContent);
-        console.log("Data saved to localStorage.");
-    }
-
-
-
-
-        function toggleColumnDropdown() {
-    const dropdown = document.getElementById('columnDropdown');
-    dropdown.style.display = dropdown.style.display === 'none' || dropdown.style.display === ''
-        ? 'block'
-        : 'none';
-}
-
-
-
-
-
-
-
-        
-        
-        
+        // Cleanup speech and blob URLs on page unload
+        window.addEventListener('beforeunload', function() {
+            stopSpeech();
+            // Clean up blob URLs to prevent memory leaks
+            Object.values(mediaFiles).forEach(url => URL.revokeObjectURL(url));
+        });
     </script>
 </body>
 </html>
