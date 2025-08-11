@@ -16,29 +16,33 @@
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: #e0e0e0;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.cards-loaded {
             display: flex;
             flex-direction: column;
+            height: 100vh;
         }
 
-        .header {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 2px solid #4a4a6a;
-        }
-
-        .header h1 {
-            color: #64b5f6;
-            margin-bottom: 0.5rem;
+        body:not(.cards-loaded) {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
         }
 
         .file-upload {
-            margin: 1rem auto;
-            padding: 1rem;
+            margin: 2rem auto;
+            padding: 2rem;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            max-width: 500px;
+            border-radius: 15px;
+            max-width: 600px;
             text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
         }
 
         .file-input {
@@ -107,28 +111,34 @@
             justify-content: center;
             align-items: center;
             padding: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .card {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 2rem;
-            max-width: 800px;
+            border-radius: 20px;
+            padding: 3rem;
             width: 100%;
-            min-height: 300px;
+            min-height: 400px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .card-content {
-            font-size: 1.5rem;
-            line-height: 1.6;
+            font-size: 2rem;
+            line-height: 1.4;
             margin-bottom: 2rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .card-content img {
@@ -214,11 +224,12 @@
             
             .card {
                 margin: 1rem;
-                padding: 1rem;
+                padding: 2rem;
+                min-height: 350px;
             }
             
             .card-content {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
             }
         }
 
@@ -245,9 +256,31 @@
 <body>
     <!-- Load required libraries for .apkg support -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <div class="header">
+        <h1>🔊 Audible Anki</h1>
+        <p>Text-to-Speech Flashcard Learning</p>
+        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid #ffc107;">
+            <strong>🎙️ Voice Options:</strong>
+            <ul style="text-align: left; margin: 0.5rem 0; list-style: none; padding-left: 0;">
+                <li>• <strong>Browser Voices:</strong> Free system voices (see settings below)</li>
+                <li>• <strong>ElevenLabs:</strong> 10k chars/month free → <a href="https://elevenlabs.io" target="_blank" style="color: #64b5f6;">elevenlabs.io</a></li>
+                <li>• <strong>OpenAI TTS:</strong> Premium quality → <a href="https://platform.openai.com" target="_blank" style="color: #64b5f6;">platform.openai.com</a></li>
+                <li>• <strong>Google Cloud:</strong> 1M chars/month free → <a href="https://cloud.google.com/text-to-speech" target="_blank" style="color: #64b5f6;">cloud.google.com</a></li>
+            </ul>
+        </div>
+        <div style="margin-top: 1rem; padding: 1rem; background: rgba(33, 150, 243, 0.1); border-radius: 10px; border-left: 4px solid #2196F3;">
+            <strong>📱 iPhone Users:</strong> Settings → Accessibility → Spoken Content → Voices to download premium iOS voices
+        </div>
+    </div>
 
     <div class="file-upload" id="fileUpload">
+        <h3>Load Anki Cards</h3>
+        <p>Upload an Anki .txt export file (tab-separated) or .apkg package file with media</p>
+        <div style="font-size: 0.9rem; color: #b0b0b0; margin: 1rem 0;">
+            <strong>.apkg files:</strong> Full Anki deck with images, audio, and all formatting<br>
+            <strong>.txt files:</strong> Simple export (File → Export → Notes in Plain Text)
+        </div>
         <input type="file" id="fileInput" class="file-input" accept=".txt,.apkg" />
         <button onclick="loadFile()" class="btn">Load Cards</button>
         <div id="loadingIndicator" style="display: none; margin-top: 1rem; color: #64b5f6;">
@@ -258,15 +291,12 @@
 
     <div class="settings">
         <div class="setting-group">
-            <label for="pauseTime">Auto Pause (seconds):</label>
+            <label for="pauseTime">Question Time (seconds):</label>
             <input type="number" id="pauseTime" value="10" min="1" max="60" />
         </div>
         <div class="setting-group">
-            <label for="voiceSelect">Voice:</label>
-            <select id="voiceSelect">
-                <option value="">Loading voices...</option>
-            </select>
-            <button onclick="testVoice()" class="btn" style="padding: 0.5rem; margin-left: 0.5rem;">Test</button>
+            <label for="answerTime">Answer Time (seconds):</label>
+            <input type="number" id="answerTime" value="5" min="1" max="30" />
         </div>
         <div class="setting-group">
             <label for="speechRate">Speech Rate:</label>
@@ -281,6 +311,7 @@
         <div class="setting-group">
             <label for="randomize">Randomize:</label>
             <input type="checkbox" id="randomize" />
+            <button onclick="shuffleNow()" class="btn" style="padding: 0.5rem; margin-left: 0.5rem;">Shuffle Now</button>
         </div>
     </div>
 
@@ -293,7 +324,7 @@
     </div>
 
     <div class="auto-mode-indicator" id="autoIndicator">
-        <div>Auto Mode Active</div>
+        <div id="autoPhase">Auto Mode Active - Question Time</div>
         <div class="timer" id="timer"></div>
     </div>
 
@@ -316,77 +347,12 @@
         let autoTimer = null;
         let countdownTimer = null;
         let currentUtterance = null;
-        let voices = [];
         let mediaFiles = {}; // Store media files as blob URLs
 
         // Check for speech synthesis support
         if (!('speechSynthesis' in window)) {
             alert('Your browser does not support text-to-speech. Please use a modern browser.');
         }
-
-        // Load available voices
-        function loadVoices() {
-            voices = speechSynthesis.getVoices();
-            const voiceSelect = document.getElementById('voiceSelect');
-            voiceSelect.innerHTML = '';
-
-            if (voices.length === 0) {
-                voiceSelect.innerHTML = '<option value="">No voices available</option>';
-                return;
-            }
-
-            // Add default option
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Default Voice';
-            voiceSelect.appendChild(defaultOption);
-
-            // Group voices by language and quality
-            const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-            const otherVoices = voices.filter(voice => !voice.lang.startsWith('en'));
-
-            // Add English voices first (prioritize neural/premium voices)
-            englishVoices.sort((a, b) => {
-                const aQuality = (a.name.includes('Neural') || a.name.includes('Premium') || a.name.includes('Enhanced')) ? 0 : 1;
-                const bQuality = (b.name.includes('Neural') || b.name.includes('Premium') || b.name.includes('Enhanced')) ? 0 : 1;
-                return aQuality - bQuality || a.name.localeCompare(b.name);
-            });
-
-            englishVoices.forEach(voice => {
-                const option = document.createElement('option');
-                option.value = voice.name;
-                const quality = (voice.name.includes('Neural') || voice.name.includes('Premium') || voice.name.includes('Enhanced')) ? ' ⭐' : '';
-                option.textContent = `${voice.name} (${voice.lang})${quality}`;
-                voiceSelect.appendChild(option);
-            });
-
-            // Add separator if there are other languages
-            if (otherVoices.length > 0) {
-                const separator = document.createElement('option');
-                separator.disabled = true;
-                separator.textContent = '--- Other Languages ---';
-                voiceSelect.appendChild(separator);
-
-                otherVoices.forEach(voice => {
-                    const option = document.createElement('option');
-                    option.value = voice.name;
-                    option.textContent = `${voice.name} (${voice.lang})`;
-                    voiceSelect.appendChild(option);
-                });
-            }
-
-            // Auto-select a high-quality English voice if available
-            const preferredVoice = englishVoices.find(voice => 
-                voice.name.includes('Neural') || voice.name.includes('Premium') || voice.name.includes('Enhanced')
-            );
-            if (preferredVoice) {
-                voiceSelect.value = preferredVoice.name;
-            }
-        }
-
-        // Load voices when they become available
-        speechSynthesis.addEventListener('voiceschanged', loadVoices);
-        loadVoices(); // Try loading immediately
 
         function loadFile() {
             const fileInput = document.getElementById('fileInput');
@@ -583,13 +549,16 @@
         }
 
         function initializeApp() {
+            document.body.classList.add('cards-loaded');
             document.getElementById('fileUpload').classList.add('hidden');
             document.getElementById('controls').classList.remove('hidden');
             document.getElementById('progressContainer').classList.remove('hidden');
             document.getElementById('cardContainer').classList.remove('hidden');
 
+            // Apply randomization if selected
             if (document.getElementById('randomize').checked) {
                 shuffleCards();
+                console.log('Cards shuffled!');
             }
 
             currentCardIndex = 0;
@@ -598,10 +567,36 @@
         }
 
         function shuffleCards() {
+            // Fisher-Yates shuffle algorithm
             for (let i = cards.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [cards[i], cards[j]] = [cards[j], cards[i]];
             }
+            console.log('Shuffled order for first 5 cards:', cards.slice(0, 5).map(c => c.front.substring(0, 20) + '...'));
+        }
+
+        function shuffleNow() {
+            if (cards.length === 0) {
+                alert('Please load cards first!');
+                return;
+            }
+            
+            stopAutoMode();
+            shuffleCards();
+            currentCardIndex = 0;
+            showCard();
+            updateProgress();
+            
+            // Visual feedback
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Shuffled!';
+            btn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 1500);
         }
 
         function showCard() {
@@ -706,15 +701,6 @@
                 currentUtterance = new SpeechSynthesisUtterance(cleanText);
                 currentUtterance.rate = parseFloat(document.getElementById('speechRate').value);
                 
-                // Set selected voice
-                const selectedVoiceName = document.getElementById('voiceSelect').value;
-                if (selectedVoiceName) {
-                    const selectedVoice = voices.find(voice => voice.name === selectedVoiceName);
-                    if (selectedVoice) {
-                        currentUtterance.voice = selectedVoice;
-                    }
-                }
-                
                 document.getElementById('cardContent').classList.add('speaking');
                 
                 currentUtterance.onend = function() {
@@ -734,10 +720,6 @@
             speechSynthesis.cancel();
             document.getElementById('cardContent').classList.remove('speaking');
             currentUtterance = null;
-        }
-
-        function testVoice() {
-            speak("Hello! This is how I will sound when reading your flashcards. How do you like this voice?");
         }
 
         function nextCard() {
@@ -803,12 +785,14 @@
             if (!autoMode || cards.length === 0) return;
 
             const card = cards[currentCardIndex];
+            const autoPhase = document.getElementById('autoPhase');
             
             // Show and speak front
             showCard();
             speak(card.front);
 
-            // Start countdown
+            // Start countdown for question time
+            autoPhase.textContent = 'Auto Mode Active - Question Time';
             let timeLeft = parseInt(document.getElementById('pauseTime').value);
             const timerElement = document.getElementById('timer');
             
@@ -821,8 +805,10 @@
                     
                     // Show and speak back
                     showAnswer();
+                    autoPhase.textContent = 'Auto Mode Active - Answer Time';
                     
-                    // Move to next card after a pause
+                    // Wait for answer time before moving to next card
+                    const answerTime = parseInt(document.getElementById('answerTime').value) * 1000;
                     autoTimer = setTimeout(() => {
                         if (autoMode) {
                             nextCard();
@@ -830,7 +816,7 @@
                                 runAutoSequence();
                             }
                         }
-                    }, 3000);
+                    }, answerTime);
                 }
             }, 1000);
         }
