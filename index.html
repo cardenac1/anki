@@ -245,20 +245,9 @@
 <body>
     <!-- Load required libraries for .apkg support -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <div class="header">
-        <h1>🔊 Audible Anki</h1>
-        <p>Text-to-Speech Flashcard Learning</p>
-        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid #ffc107;">
-        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script
 
     <div class="file-upload" id="fileUpload">
-        <h3>Load Anki Cards</h3>
-        <p>Upload an Anki .txt export file (tab-separated) or .apkg package file with media</p>
-        <div style="font-size: 0.9rem; color: #b0b0b0; margin: 1rem 0;">
-            <strong>.apkg files:</strong> Full Anki deck with images, audio, and all formatting<br>
-            <strong>.txt files:</strong> Simple export (File → Export → Notes in Plain Text)
-        </div>
         <input type="file" id="fileInput" class="file-input" accept=".txt,.apkg" />
         <button onclick="loadFile()" class="btn">Load Cards</button>
         <div id="loadingIndicator" style="display: none; margin-top: 1rem; color: #64b5f6;">
