@@ -596,6 +596,10 @@ body {
   :root { --sw: 230px; }
   #sidebar { position:absolute; top:var(--topbar); bottom:0; left:0; z-index:40; }
   #sidebar:not(.collapsed) { box-shadow:4px 0 24px rgba(0,0,0,.6); }
+  /* Card modal fills more of the screen on mobile */
+  .modal-overlay { padding: 6px; }
+  #card-modal .modal { max-width: 100%; max-height: 96dvh; }
+  .face-content { max-height: 58dvh; }
 }
 </style>
 </head>
@@ -857,6 +861,13 @@ let imgObserver = null;
 // ═══════════════════════════════════════════════════════════════
 document.getElementById('sb-toggle').onclick = () =>
   document.getElementById('sidebar').classList.toggle('collapsed');
+
+document.getElementById('main').addEventListener('click', () => {
+  const sidebar = document.getElementById('sidebar');
+  if (window.innerWidth <= 500 && !sidebar.classList.contains('collapsed')) {
+    sidebar.classList.add('collapsed');
+  }
+});
 
 document.getElementById('file-input').onchange = e => {
   if (e.target.files[0]) loadFile(e.target.files[0]);
