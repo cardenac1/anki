@@ -1,871 +1,1800 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audible Anki</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Anki Browser</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Mulish:wght@300;400;500;600&display=swap');
+:root {
+  --bg: #080809;
+  --s1: #0f0f12;
+  --s2: #161619;
+  --s3: #1e1e23;
+  --s4: #26262d;
+  --b: #2a2a33;
+  --b2: #353540;
+  --a: #6d5ffc;
+  --a2: #9d93fd;
+  --a3: #c4bffe;
+  --t: #ededf2;
+  --t2: #8888a0;
+  --t3: #4a4a60;
+  --r: #fc5f5f;
+  --g: #4ade80;
+  --y: #fbbf24;
+  --o: #fb923c;
+  --sw: 260px;
+  --topbar: 50px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Mulish', sans-serif;
+  background: var(--bg);
+  color: var(--t);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: #e0e0e0;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
+/* ── Topbar ── */
+#topbar {
+  height: var(--topbar);
+  background: var(--s1);
+  border-bottom: 1px solid var(--b);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 7px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--a2);
+  letter-spacing: .04em;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+.logo span { color: var(--t3); font-weight: 400; }
+.search-wrap { flex: 1; position: relative; min-width: 0; }
+.search-wrap svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .35; }
+#search {
+  width: 100%;
+  background: var(--s3);
+  border: 1px solid var(--b);
+  border-radius: 7px;
+  color: var(--t);
+  font-family: 'Mulish', sans-serif;
+  font-size: 13px;
+  padding: 7px 10px 7px 30px;
+  outline: none;
+  transition: border-color .15s;
+  -webkit-appearance: none;
+}
+#search:focus { border-color: var(--a); }
+#search::placeholder { color: var(--t3); }
+.btn {
+  height: 32px;
+  padding: 0 11px;
+  background: var(--s3);
+  border: 1px solid var(--b);
+  border-radius: 7px;
+  color: var(--t2);
+  font-family: 'Mulish', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all .15s;
+  -webkit-appearance: none;
+}
+.btn:hover { background: var(--s4); color: var(--t); border-color: var(--b2); }
+.btn:active { transform: scale(.97); }
+.btn.icon { width: 32px; padding: 0; justify-content: center; }
+.btn.primary { background: var(--a); border-color: var(--a); color: #fff; }
+.btn.primary:hover { background: var(--a2); border-color: var(--a2); color: var(--bg); }
+.btn.danger { border-color: transparent; }
+.btn.danger:hover { border-color: var(--r); color: var(--r); background: rgba(252,95,95,.08); }
+.btn.success { background: rgba(74,222,128,.12); border-color: rgba(74,222,128,.3); color: var(--g); }
+.btn.success:hover { background: rgba(74,222,128,.2); }
+#dirty-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--y);
+  flex-shrink: 0;
+  display: none;
+  box-shadow: 0 0 6px var(--y);
+}
+#count-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--t3);
+  background: var(--s2);
+  border: 1px solid var(--b);
+  border-radius: 20px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  display: none;
+  flex-shrink: 0;
+}
 
-        body.cards-loaded {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+/* ── Batch bar ── */
+#batch-bar {
+  height: 40px;
+  background: rgba(109,95,252,.12);
+  border-bottom: 1px solid rgba(109,95,252,.25);
+  display: none;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  animation: slideDown .2s ease;
+}
+@keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+#batch-bar.visible { display: flex; }
+#batch-count { font-size: 12px; font-weight: 600; color: var(--a2); flex-shrink: 0; }
+.batch-sep { flex: 1; }
 
-        body:not(.cards-loaded) {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
+/* ── Layout ── */
+#layout { display: flex; flex: 1; overflow: hidden; }
 
-        .file-upload {
-            margin: 2rem auto;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            max-width: 600px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
+/* ── Sidebar ── */
+#sidebar {
+  width: var(--sw);
+  background: var(--s1);
+  border-right: 1px solid var(--b);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width .28s cubic-bezier(.4,0,.2,1), transform .28s cubic-bezier(.4,0,.2,1);
+}
+#sidebar.collapsed { width: 0; transform: translateX(calc(-1 * var(--sw))); }
+.sb-header {
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid var(--b);
+  flex-shrink: 0;
+}
+.sb-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.sb-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+#sb-search {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--b);
+  border-radius: 6px;
+  color: var(--t);
+  font-family: 'Mulish', sans-serif;
+  font-size: 12px;
+  padding: 5px 9px;
+  outline: none;
+  transition: border-color .15s;
+  -webkit-appearance: none;
+}
+#sb-search:focus { border-color: var(--a); }
+#sb-search::placeholder { color: var(--t3); }
+#tag-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 6px 20px;
+}
+/* tag items */
+.t-item { position: relative; }
+.t-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--t2);
+  transition: background .12s, color .12s;
+  user-select: none;
+  min-height: 30px;
+}
+.t-row:hover { background: var(--s3); color: var(--t); }
+.t-row.active { background: rgba(109,95,252,.14); color: var(--a2); }
+.t-row.active .t-dot { background: var(--a); box-shadow: 0 0 5px var(--a); }
+.t-arrow {
+  width: 13px; height: 13px;
+  flex-shrink: 0;
+  opacity: .45;
+  transition: transform .18s;
+}
+.t-row.open .t-arrow { transform: rotate(90deg); }
+.t-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--t3);
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.t-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.t-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--t3);
+  background: var(--s3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+.t-children { padding-left: 12px; }
+.t-children.hidden { display: none; }
+.sb-section-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--t3);
+  padding: 10px 7px 4px;
+}
 
-        .file-input {
-            margin: 1rem 0;
-            padding: 0.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #4a4a6a;
-            border-radius: 5px;
-            color: #e0e0e0;
-            width: 100%;
-        }
+/* ── Main ── */
+#main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin: 1rem;
-            flex-wrap: wrap;
-        }
+/* ── Drop zone ── */
+#dropzone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px;
+  text-align: center;
+}
+.drop-ring {
+  width: 80px; height: 80px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(109,95,252,.15), rgba(157,147,253,.06));
+  border: 1.5px solid rgba(109,95,252,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px;
+  animation: breathe 4s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(109,95,252,0)} 50%{transform:scale(1.04);box-shadow:0 0 20px rgba(109,95,252,.2)} }
+.drop-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; color:var(--t); }
+.drop-sub { font-size:13px; color:var(--t3); line-height:1.8; max-width:300px; }
+.drop-sub strong { color:var(--a2); }
+.drop-btn { background:var(--a); color:#fff; border:none; border-radius:10px; padding:12px 28px; font-family:'Mulish',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; letter-spacing:.02em; }
+.drop-btn:hover { background:var(--a2); transform:translateY(-1px); }
+.drop-btn:active { transform:scale(.97); }
+#file-input { display:none; }
+#dropzone.drag-over { background:rgba(109,95,252,.04); }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-        }
+/* ── Loading ── */
+#loading { flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+.spinner { width:36px; height:36px; border:2.5px solid var(--b); border-top-color:var(--a); border-radius:50%; animation:spin .75s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+#loading-text { font-size:13px; color:var(--t2); text-align:center; max-width:260px; line-height:1.6; }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-        }
+/* ── List header ── */
+#list-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--b);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--s1);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-height: 40px;
+}
+.filter-chip {
+  font-size: 11.5px;
+  color: var(--a2);
+  background: rgba(109,95,252,.12);
+  border: 1px solid rgba(109,95,252,.22);
+  border-radius: 20px;
+  padding: 3px 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.chip-x { cursor:pointer; opacity:.5; font-size:14px; line-height:1; transition:opacity .15s; }
+.chip-x:hover { opacity:1; }
+.header-label { font-size:12px; color:var(--t2); font-weight:500; }
+.header-space { flex:1; }
+.select-all-wrap { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--t3); cursor:pointer; }
+.select-all-wrap input { cursor:pointer; accent-color:var(--a); }
 
-        .btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+/* ── Card list (virtual scroll) ── */
+#list-view { flex:1; overflow:hidden; display:none; flex-direction:column; }
+#scroll-container { flex:1; overflow-y:auto; position:relative; }
+#scroll-spacer { position:relative; width:100%; }
+#cards-viewport { position:absolute; top:0; left:0; right:0; padding:8px; display:flex; flex-direction:column; gap:6px; }
 
-        .btn.danger {
-            background: linear-gradient(45deg, #f44336, #d32f2f);
-            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
-        }
+/* ── Card row ── */
+.card-row {
+  background: var(--s1);
+  border: 1px solid var(--b);
+  border-radius: 9px;
+  padding: 11px 13px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  transition: border-color .12s, background .12s;
+  cursor: pointer;
+}
+.card-row:hover { border-color: var(--b2); background: var(--s2); }
+.card-row.selected { border-color: rgba(109,95,252,.45); background: rgba(109,95,252,.06); }
+.card-row.selected:hover { border-color: var(--a); }
+.card-check { flex-shrink:0; margin-top:2px; accent-color:var(--a); cursor:pointer; width:14px; height:14px; }
+.card-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+.card-front {
+  font-size: 13.5px;
+  color: var(--t);
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+.card-front img { max-height: 40px; width: auto; border-radius: 4px; vertical-align: middle; }
+.card-meta { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+.ctag {
+  font-size: 10px;
+  color: var(--a2);
+  background: rgba(109,95,252,.1);
+  border: 1px solid rgba(109,95,252,.15);
+  border-radius: 4px;
+  padding: 1.5px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
+}
+.cdeck {
+  font-size: 10px;
+  color: var(--t3);
+  font-family: 'JetBrains Mono', monospace;
+}
+.card-actions { flex-shrink:0; display:flex; gap:4px; opacity:0; transition:opacity .15s; }
+.card-row:hover .card-actions { opacity:1; }
+.ca-btn {
+  width:28px; height:28px;
+  border-radius:6px;
+  background:var(--s3);
+  border:1px solid var(--b);
+  color:var(--t2);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .12s;
+  flex-shrink:0;
+}
+.ca-btn:hover { background:var(--s4); color:var(--t); border-color:var(--b2); }
+.ca-btn.del:hover { background:rgba(252,95,95,.1); border-color:rgba(252,95,95,.3); color:var(--r); }
 
-        .btn.danger:hover {
-            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
-        }
+/* ── Modal base ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(8,8,9,.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn .18s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--s2);
+  border: 1px solid var(--b2);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp .2s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+.modal-header {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--b);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.modal-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--t); flex:1; }
+.modal-body { padding: 16px 18px; overflow-y: auto; flex:1; display:flex; flex-direction:column; gap:14px; }
+.modal-footer { padding:12px 18px; border-top:1px solid var(--b); display:flex; gap:8px; justify-content:flex-end; flex-shrink:0; }
+.field-label { font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--t3); margin-bottom:5px; }
+.field-textarea {
+  width:100%;
+  background:var(--s3);
+  border:1px solid var(--b);
+  border-radius:8px;
+  color:var(--t);
+  font-family:'Mulish',sans-serif;
+  font-size:14px;
+  line-height:1.6;
+  padding:10px 12px;
+  outline:none;
+  resize:vertical;
+  min-height:90px;
+  transition:border-color .15s;
+  -webkit-appearance:none;
+}
+.field-textarea:focus { border-color:var(--a); }
+.field-input {
+  width:100%;
+  background:var(--s3);
+  border:1px solid var(--b);
+  border-radius:8px;
+  color:var(--t);
+  font-family:'Mulish',sans-serif;
+  font-size:13px;
+  padding:8px 12px;
+  outline:none;
+  transition:border-color .15s;
+  -webkit-appearance:none;
+}
+.field-input:focus { border-color:var(--a); }
+/* tag chips editor */
+.tags-editor {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  background:var(--s3);
+  border:1px solid var(--b);
+  border-radius:8px;
+  padding:8px 10px;
+  min-height:42px;
+  cursor:text;
+  transition:border-color .15s;
+}
+.tags-editor:focus-within { border-color:var(--a); }
+.tag-chip {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  background:rgba(109,95,252,.15);
+  border:1px solid rgba(109,95,252,.25);
+  border-radius:5px;
+  padding:2px 7px;
+  font-size:12px;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--a2);
+}
+.tag-chip .remove-tag { cursor:pointer; opacity:.5; font-size:13px; transition:opacity .12s; line-height:1; }
+.tag-chip .remove-tag:hover { opacity:1; color:var(--r); }
+.tag-input-inline {
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--t);
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  min-width:80px;
+  flex:1;
+}
+/* deck selector */
+.deck-select {
+  width:100%;
+  background:var(--s3);
+  border:1px solid var(--b);
+  border-radius:8px;
+  color:var(--t);
+  font-family:'Mulish',sans-serif;
+  font-size:13px;
+  padding:8px 12px;
+  outline:none;
+  cursor:pointer;
+  -webkit-appearance:none;
+  appearance:none;
+  transition:border-color .15s;
+}
+.deck-select:focus { border-color:var(--a); }
 
-        .btn.secondary {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-        }
+/* ── Card flip modal ── */
+#card-modal .modal { max-width:520px; }
+.flip-card-wrap { perspective:1200px; cursor:pointer; }
+.flip-inner { position:relative; transform-style:preserve-3d; transition:transform .4s cubic-bezier(.4,0,.2,1); }
+.flip-inner.flipped { transform:rotateY(180deg); }
+.flip-face {
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  background:var(--s3);
+  border:1px solid var(--b2);
+  border-radius:10px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.flip-face.back { transform:rotateY(180deg); background:var(--s4); position:absolute; top:0; left:0; width:100%; }
+.flip-sizer { visibility:hidden; min-height:100px; padding:20px; display:flex; flex-direction:column; gap:8px; }
+.face-lbl { font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--t3); }
+.face-lbl.ans { color:var(--a); opacity:.8; }
+.face-content { font-size:15px; color:var(--t); line-height:1.7; word-break:break-word; overflow-y:auto; max-height:50dvh; }
+.face-content img { max-width:100%; border-radius:7px; display:block; margin:6px 0; }
+.flip-hint { font-size:11.5px; color:var(--t3); text-align:center; margin-top:8px; }
+.modal-nav { display:flex; align-items:center; gap:8px; padding:12px 18px; border-top:1px solid var(--b); flex-shrink:0; }
+.nav-pos { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t3); flex:1; text-align:center; }
 
-        .btn.secondary:hover {
-            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
-        }
+/* ── Batch tag modal ── */
+#batch-modal .modal { max-width:440px; }
+.batch-mode-row { display:flex; gap:8px; }
+.mode-btn {
+  flex:1; padding:8px; border-radius:7px; border:1px solid var(--b); background:var(--s3); color:var(--t2); font-family:'Mulish',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; text-align:center;
+}
+.mode-btn.active { background:rgba(109,95,252,.15); border-color:rgba(109,95,252,.35); color:var(--a2); }
 
-        .card-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+/* ── Toast ── */
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--s4);
+  border: 1px solid var(--b2);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--t);
+  z-index: 9999;
+  opacity: 0;
+  transition: all .25s;
+  pointer-events: none;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+#toast.success { border-color:rgba(74,222,128,.3); }
+#toast.error { border-color:rgba(252,95,95,.3); }
+.toast-undo { font-size:12px; font-weight:700; color:var(--a2); cursor:pointer; text-decoration:underline; }
 
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 3rem;
-            width: 100%;
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--b2); border-radius:4px; }
+::-webkit-scrollbar-thumb:hover { background:var(--t3); }
 
-        .card-content {
-            font-size: 2rem;
-            line-height: 1.4;
-            margin-bottom: 2rem;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.empty-state { color:var(--t3); font-size:13.5px; text-align:center; padding:48px 20px; line-height:1.8; }
 
-        .card-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            margin: 1rem 0;
-        }
-
-        .card-info {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .settings {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .setting-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .setting-group label {
-            color: #b0b0b0;
-        }
-
-        .setting-group input, .setting-group select {
-            padding: 0.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #4a4a6a;
-            border-radius: 5px;
-            color: #e0e0e0;
-        }
-
-        .progress {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 1rem;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            transition: width 0.3s;
-        }
-
-        .auto-mode-indicator {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-            padding: 1rem;
-            text-align: center;
-            border-radius: 10px;
-            margin: 1rem;
-            display: none;
-        }
-
-        .timer {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ffc107;
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .settings {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .card {
-                margin: 1rem;
-                padding: 2rem;
-                min-height: 350px;
-            }
-            
-            .card-content {
-                font-size: 1.5rem;
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .speaking {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+/* ── Responsive: hide sidebar on very small screens ── */
+@media (max-width: 500px) {
+  :root { --sw: 230px; }
+  #sidebar { position:absolute; top:var(--topbar); bottom:0; left:0; z-index:40; }
+  #sidebar:not(.collapsed) { box-shadow:4px 0 24px rgba(0,0,0,.6); }
+}
+</style>
 </head>
 <body>
-    <!-- Load required libraries for .apkg support -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <div class="header">
-        <h1>🔊 Audible Anki</h1>
-        <p>Text-to-Speech Flashcard Learning</p>
-        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; border-left: 4px solid #ffc107;">
-            <strong>🎙️ Voice Options:</strong>
-            <ul style="text-align: left; margin: 0.5rem 0; list-style: none; padding-left: 0;">
-                <li>• <strong>Browser Voices:</strong> Free system voices (see settings below)</li>
-                <li>• <strong>ElevenLabs:</strong> 10k chars/month free → <a href="https://elevenlabs.io" target="_blank" style="color: #64b5f6;">elevenlabs.io</a></li>
-                <li>• <strong>OpenAI TTS:</strong> Premium quality → <a href="https://platform.openai.com" target="_blank" style="color: #64b5f6;">platform.openai.com</a></li>
-                <li>• <strong>Google Cloud:</strong> 1M chars/month free → <a href="https://cloud.google.com/text-to-speech" target="_blank" style="color: #64b5f6;">cloud.google.com</a></li>
-            </ul>
-        </div>
-        <div style="margin-top: 1rem; padding: 1rem; background: rgba(33, 150, 243, 0.1); border-radius: 10px; border-left: 4px solid #2196F3;">
-            <strong>📱 iPhone Users:</strong> Settings → Accessibility → Spoken Content → Voices to download premium iOS voices
-        </div>
+
+<!-- Topbar -->
+<div id="topbar">
+  <button class="btn icon" id="sb-toggle" title="Toggle sidebar">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+      <rect x="1" y="2.5" width="13" height="1.4" rx=".7" fill="currentColor"/>
+      <rect x="1" y="6.8" width="8" height="1.4" rx=".7" fill="currentColor"/>
+      <rect x="1" y="11.1" width="13" height="1.4" rx=".7" fill="currentColor"/>
+    </svg>
+  </button>
+  <span class="logo">ANKI<span>BROWSE</span></span>
+  <div class="search-wrap">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="search" type="search" placeholder="Search cards, tags, decks…" autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+  <span id="dirty-dot" title="Unsaved changes"></span>
+  <span id="count-badge">0</span>
+  <button class="btn" id="new-card-btn" style="display:none" title="New card">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    New
+  </button>
+  <button class="btn success" id="export-btn" style="display:none" title="Export .apkg">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export
+  </button>
+</div>
+
+<!-- Batch bar -->
+<div id="batch-bar">
+  <span id="batch-count">0 selected</span>
+  <button class="btn" id="batch-tag-btn">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m20.59 13.41-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>
+    Edit Tags
+  </button>
+  <button class="btn" id="batch-deck-btn">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 8h20M2 16h20M8 3v18M16 3v18"/></svg>
+    Move Deck
+  </button>
+  <span class="batch-sep"></span>
+  <button class="btn danger" id="batch-delete-btn">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+    Delete
+  </button>
+  <button class="btn" id="batch-clear-btn">✕ Clear</button>
+</div>
+
+<!-- Layout -->
+<div id="layout">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sb-header">
+      <div class="sb-header-row">
+        <span class="sb-title">Tag Navigator</span>
+        <button class="btn icon" id="collapse-all-btn" title="Collapse all" style="width:26px;height:26px;font-size:11px">—</button>
+      </div>
+      <input id="sb-search" type="search" placeholder="Filter tags…" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div id="tag-tree"></div>
+  </aside>
+
+  <!-- Main content -->
+  <main id="main">
+
+    <!-- Drop zone -->
+    <div id="dropzone">
+      <div class="drop-ring">🃏</div>
+      <div class="drop-title">Anki Browser</div>
+      <div class="drop-sub">
+        Drop your <strong>.apkg</strong> or <strong>.colpkg</strong> here<br>
+        or tap to choose a file.<br><br>
+        Edit, tag, browse &amp; export — all on device.
+      </div>
+      <button class="drop-btn" onclick="document.getElementById('file-input').click()">Open Deck File</button>
+      <input type="file" id="file-input" accept=".apkg,.colpkg,.zip">
     </div>
 
-    <div class="file-upload" id="fileUpload">
-        <h3>Load Anki Cards</h3>
-        <p>Upload an Anki .txt export file (tab-separated) or .apkg package file with media</p>
-        <div style="font-size: 0.9rem; color: #b0b0b0; margin: 1rem 0;">
-            <strong>.apkg files:</strong> Full Anki deck with images, audio, and all formatting<br>
-            <strong>.txt files:</strong> Simple export (File → Export → Notes in Plain Text)
-        </div>
-        <input type="file" id="fileInput" class="file-input" accept=".txt,.apkg" />
-        <button onclick="loadFile()" class="btn">Load Cards</button>
-        <div id="loadingIndicator" style="display: none; margin-top: 1rem; color: #64b5f6;">
-            <div style="display: inline-block; animation: spin 1s linear infinite;">⏳</div>
-            Loading .apkg file...
-        </div>
+    <!-- Loading -->
+    <div id="loading">
+      <div class="spinner"></div>
+      <div id="loading-text">Loading…</div>
     </div>
 
-    <div class="settings">
-        <div class="setting-group">
-            <label for="pauseTime">Question Time (seconds):</label>
-            <input type="number" id="pauseTime" value="10" min="1" max="60" />
+    <!-- List view -->
+    <div id="list-view">
+      <div id="list-header"></div>
+      <div id="scroll-container">
+        <div id="scroll-spacer">
+          <div id="cards-viewport"></div>
         </div>
-        <div class="setting-group">
-            <label for="answerTime">Answer Time (seconds):</label>
-            <input type="number" id="answerTime" value="5" min="1" max="30" />
-        </div>
-        <div class="setting-group">
-            <label for="speechRate">Speech Rate:</label>
-            <select id="speechRate">
-                <option value="0.5">0.5x</option>
-                <option value="0.75">0.75x</option>
-                <option value="1" selected>1x</option>
-                <option value="1.25">1.25x</option>
-                <option value="1.5">1.5x</option>
-            </select>
-        </div>
-        <div class="setting-group">
-            <label for="randomize">Randomize:</label>
-            <input type="checkbox" id="randomize" />
-            <button onclick="shuffleNow()" class="btn" style="padding: 0.5rem; margin-left: 0.5rem;">Shuffle Now</button>
-        </div>
+      </div>
     </div>
 
-    <div class="controls hidden" id="controls">
-        <button onclick="previousCard()" class="btn secondary">⬅️ Previous</button>
-        <button onclick="showAnswer()" class="btn" id="showBtn">Show Answer</button>
-        <button onclick="nextCard()" class="btn secondary">Next ➡️</button>
-        <button onclick="toggleAutoMode()" class="btn" id="autoBtn">🔄 Auto Mode</button>
-        <button onclick="stopSpeech()" class="btn danger">🔇 Stop Speech</button>
-    </div>
+  </main>
+</div>
 
-    <div class="auto-mode-indicator" id="autoIndicator">
-        <div id="autoPhase">Auto Mode Active - Question Time</div>
-        <div class="timer" id="timer"></div>
+<!-- ── Card view modal ── -->
+<div class="modal-overlay" id="card-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="card-modal-title">Card</span>
+      <button class="btn icon" onclick="closeModal('card-modal')">✕</button>
     </div>
-
-    <div class="progress hidden" id="progressContainer">
-        <div class="progress-bar" id="progressBar"></div>
-    </div>
-
-    <div class="card-container">
-        <div class="card hidden" id="cardContainer">
-            <div class="card-info" id="cardInfo"></div>
-            <div class="card-content" id="cardContent"></div>
+    <div class="modal-body" style="gap:10px">
+      <div class="flip-card-wrap" onclick="flipCard()">
+        <div class="flip-inner" id="flip-inner">
+          <div class="flip-face front">
+            <div class="face-lbl">Question</div>
+            <div class="face-content" id="flip-front"></div>
+          </div>
+          <div class="flip-face back">
+            <div class="face-lbl ans">Answer</div>
+            <div class="face-content" id="flip-back"></div>
+          </div>
         </div>
+        <div class="flip-sizer"><div style="font-size:10px;opacity:0">x</div><div id="flip-sizer-content" style="font-size:15px;line-height:1.7;min-height:60px"></div></div>
+      </div>
+      <div class="flip-hint" id="flip-hint">Tap card to reveal answer</div>
+      <div class="card-meta" id="card-modal-tags" style="margin-top:4px"></div>
     </div>
+    <div class="modal-nav">
+      <button class="btn" id="modal-prev" onclick="navCard(-1)">← Prev</button>
+      <span class="nav-pos" id="nav-pos"></span>
+      <button class="btn" id="modal-edit" onclick="editCurrentCard()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </button>
+      <button class="btn" id="modal-next" onclick="navCard(1)">Next →</button>
+    </div>
+  </div>
+</div>
 
-    <script>
-        let cards = [];
-        let currentCardIndex = 0;
-        let showingBack = false;
-        let autoMode = false;
-        let autoTimer = null;
-        let countdownTimer = null;
-        let currentUtterance = null;
-        let mediaFiles = {}; // Store media files as blob URLs
+<!-- ── Edit / Create modal ── -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="edit-modal-title">Edit Card</span>
+      <button class="btn icon" onclick="closeModal('edit-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <div class="field-label">Front (Question)</div>
+        <textarea class="field-textarea" id="edit-front" rows="4" placeholder="Question…"></textarea>
+      </div>
+      <div>
+        <div class="field-label">Back (Answer)</div>
+        <textarea class="field-textarea" id="edit-back" rows="4" placeholder="Answer…"></textarea>
+      </div>
+      <div>
+        <div class="field-label">Tags <span style="color:var(--t3);font-size:10px;text-transform:none;letter-spacing:0">(space or Enter to add, :: for sub-tags)</span></div>
+        <div class="tags-editor" id="edit-tags-editor" onclick="document.getElementById('tag-input-inline').focus()">
+          <input type="text" class="tag-input-inline" id="tag-input-inline" placeholder="add tag…" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+      <div>
+        <div class="field-label">Deck</div>
+        <select class="deck-select" id="edit-deck"></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn primary" id="save-card-btn" onclick="saveCard()">Save Card</button>
+    </div>
+  </div>
+</div>
 
-        // Check for speech synthesis support
-        if (!('speechSynthesis' in window)) {
-            alert('Your browser does not support text-to-speech. Please use a modern browser.');
+<!-- ── Batch tag modal ── -->
+<div class="modal-overlay" id="batch-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Batch Edit Tags</span>
+      <button class="btn icon" onclick="closeModal('batch-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="batch-mode-row">
+        <button class="mode-btn active" id="mode-add" onclick="setBatchMode('add')">+ Add Tags</button>
+        <button class="mode-btn" id="mode-remove" onclick="setBatchMode('remove')">− Remove Tags</button>
+        <button class="mode-btn" id="mode-replace" onclick="setBatchMode('replace')">↔ Replace All</button>
+      </div>
+      <div>
+        <div class="field-label" id="batch-tag-label">Tags to Add</div>
+        <div class="tags-editor" id="batch-tags-editor" onclick="document.getElementById('batch-tag-input').focus()">
+          <input type="text" class="tag-input-inline" id="batch-tag-input" placeholder="add tag…" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+      <div id="batch-info" style="font-size:12px;color:var(--t3);line-height:1.6"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('batch-modal')">Cancel</button>
+      <button class="btn primary" onclick="applyBatchTags()">Apply to <span id="batch-apply-count">0</span> Cards</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Batch deck modal ── -->
+<div class="modal-overlay" id="batch-deck-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Move to Deck</span>
+      <button class="btn icon" onclick="closeModal('batch-deck-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <div class="field-label">Target Deck</div>
+        <select class="deck-select" id="batch-deck-select"></select>
+      </div>
+      <div style="font-size:12px;color:var(--t3)">Moving <strong id="batch-deck-count" style="color:var(--t2)">0</strong> cards to selected deck.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('batch-deck-modal')">Cancel</button>
+      <button class="btn primary" onclick="applyBatchDeck()">Move Cards</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let SQL = null;
+let originalZip = null;       // the loaded JSZip object
+let dbBytes = null;           // original db Uint8Array
+let allCards = [];            // { id, nid, front, back, tags[], deck, did, mod }
+let filtered = [];            // current filtered view
+let decksMap = {};            // did → name
+let mediaMap = {};            // filename → objectURL (lazy)
+let mediaZipMap = {};         // filename → zip entry (for lazy loading)
+let activeTag = null;
+let searchQuery = '';
+let isDirty = false;
+let deletedNids = new Set();
+let selectedIds = new Set();  // card indices in allCards
+let editingIndex = null;      // allCards index being edited
+let viewingIndex = null;      // allCards index in card modal
+let batchTagMode = 'add';
+let batchTags = [];
+let undoStack = [];           // for undo
+
+// Virtual scroll state
+const ROW_H = 72;             // estimated row height px
+let vsOffset = 0;
+let vsTotal = 0;
+let vsRenderedStart = 0;
+let vsRenderedEnd = 0;
+const VS_BUFFER = 8;          // extra rows above/below viewport
+
+// IntersectionObserver for lazy images
+let imgObserver = null;
+
+// ═══════════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('sb-toggle').onclick = () =>
+  document.getElementById('sidebar').classList.toggle('collapsed');
+
+document.getElementById('file-input').onchange = e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+};
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+let searchTimer;
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { searchQuery = e.target.value.toLowerCase().trim(); applyFilters(); }, 180);
+});
+
+document.getElementById('sb-search').addEventListener('input', e => {
+  filterTagTree(e.target.value.toLowerCase().trim());
+});
+
+document.getElementById('collapse-all-btn').onclick = collapseAllTags;
+document.getElementById('new-card-btn').onclick = () => openEditModal(null);
+document.getElementById('export-btn').onclick = exportApkg;
+document.getElementById('batch-tag-btn').onclick = openBatchTagModal;
+document.getElementById('batch-deck-btn').onclick = openBatchDeckModal;
+document.getElementById('batch-delete-btn').onclick = batchDelete;
+document.getElementById('batch-clear-btn').onclick = clearSelection;
+
+// Tag input handlers
+setupTagInput('tag-input-inline', 'edit-tags-editor', getEditTags, setEditTags);
+setupTagInput('batch-tag-input', 'batch-tags-editor', getBatchTags, setBatchTags);
+
+// Scroll handler for virtual scroll
+document.getElementById('scroll-container').addEventListener('scroll', onScroll, { passive: true });
+
+// ═══════════════════════════════════════════════════════════════
+//  FILE LOADING
+// ═══════════════════════════════════════════════════════════════
+async function loadFile(file) {
+  setView('loading'); setLt('Unzipping…');
+  mediaMap = {}; mediaZipMap = {};
+
+  try {
+    const buf = await file.arrayBuffer();
+    originalZip = await JSZip.loadAsync(buf);
+
+    // Index media files (don't load blobs yet — lazy)
+    setLt('Indexing media…');
+    const mf = originalZip.file('media');
+    if (mf) {
+      let mmap = {};
+      try { mmap = JSON.parse(await mf.async('string')); } catch(e) {}
+      for (const [idx, name] of Object.entries(mmap)) {
+        const zf = originalZip.file(idx);
+        if (zf) mediaZipMap[name] = zf;
+      }
+    }
+
+    // Load DB
+    setLt('Reading database…');
+    const dbFile = originalZip.file('collection.anki21') ||
+                   originalZip.file('collection.anki2')  ||
+                   originalZip.file('collection.anki21b');
+    if (!dbFile) throw new Error('No Anki collection found in this file.\nExport as "Anki Package (.apkg)" from Anki.');
+    dbBytes = await dbFile.async('uint8array');
+
+    setLt('Starting SQL engine…');
+    if (!SQL) SQL = await loadSql();
+
+    setLt('Parsing cards…');
+    await tick();
+    parseDatabase();
+
+    buildTagTree();
+    applyFilters();
+    setView('list');
+    document.getElementById('count-badge').style.display = '';
+    document.getElementById('new-card-btn').style.display = '';
+    document.getElementById('export-btn').style.display = '';
+
+  } catch(err) {
+    console.error(err);
+    setLt('❌ ' + err.message);
+    setTimeout(() => setView('drop'), 7000);
+  }
+}
+
+function loadSql() {
+  return new Promise((resolve, reject) => {
+    if (window.initSqlJs) { initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}` }).then(resolve).catch(reject); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js';
+    s.onload = () => initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}` }).then(resolve).catch(reject);
+    s.onerror = () => reject(new Error('Failed to load SQL engine. Check internet connection.'));
+    document.head.appendChild(s);
+  });
+}
+
+function parseDatabase() {
+  const db = new SQL.Database(new Uint8Array(dbBytes));
+
+  // Get column names dynamically
+  const cols = name => {
+    try { return db.exec(`PRAGMA table_info(${name})`)[0].values.map(r => r[1]); } catch(e) { return []; }
+  };
+
+  // Decks map
+  decksMap = {};
+  try {
+    const colCols = cols('col');
+    let decksJson = null;
+    if (colCols.includes('decks')) {
+      const r = db.exec('SELECT decks FROM col LIMIT 1');
+      if (r.length) decksJson = r[0].values[0][0];
+    } else {
+      const r = db.exec('SELECT * FROM col LIMIT 1');
+      if (r.length) for (const v of r[0].values[0]) {
+        if (typeof v === 'string' && v.includes('"name"')) {
+          try { const p = JSON.parse(v); if (Object.values(p)[0]?.name) { decksJson = v; break; } } catch(e) {}
         }
+      }
+    }
+    if (decksJson) {
+      const p = JSON.parse(decksJson);
+      for (const [id, d] of Object.entries(p)) decksMap[id] = d.name || ('Deck ' + id);
+    }
+  } catch(e) {}
+  if (!Object.keys(decksMap).length) decksMap['1'] = 'Default';
 
-        function loadFile() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Please select a file first.');
-                return;
-            }
+  // nid → did
+  const nidToDid = {};
+  try {
+    const r = db.exec('SELECT nid, did FROM cards GROUP BY nid');
+    if (r.length) for (const [nid, did] of r[0].values) nidToDid[nid] = did;
+  } catch(e) {}
 
-            const fileName = file.name.toLowerCase();
-            
-            if (fileName.endsWith('.txt')) {
-                loadTextFile(file);
-            } else if (fileName.endsWith('.apkg')) {
-                loadApkgFile(file);
-            } else {
-                alert('Please select a .txt or .apkg file.');
-            }
-        }
+  // Notes
+  const noteCols = cols('notes');
+  const fldsI = noteCols.indexOf('flds');
+  const tagsI = noteCols.indexOf('tags');
+  const idI   = noteCols.indexOf('id');
+  const modI  = noteCols.indexOf('mod');
+  if (fldsI === -1) throw new Error(`Cannot find 'flds' in notes table. Found: ${noteCols.join(', ')}`);
 
-        function loadTextFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                parseTextCards(content);
-            };
-            reader.readAsText(file);
-        }
+  const nr = db.exec('SELECT * FROM notes');
+  allCards = [];
+  if (nr.length) {
+    for (const row of nr[0].values) {
+      const flds = row[fldsI];
+      if (!flds || typeof flds !== 'string') continue;
+      const nid  = idI  !== -1 ? row[idI]  : null;
+      const tags = tagsI !== -1 ? (row[tagsI] || '') : '';
+      const mod  = modI !== -1 ? row[modI] : 0;
+      const parts = flds.split('\x1f');
+      const front = parts[0] || '';
+      const back  = parts.slice(1).filter(Boolean).join('\n---\n');
+      const tagList = String(tags).trim().split(/\s+/).filter(Boolean);
+      const did = nid != null ? nidToDid[nid] : null;
+      const deckName = did && decksMap[did] ? decksMap[did] : 'Default';
+      allCards.push({ nid, front, back, tags: tagList, deck: deckName, did: did ? String(did) : '1', mod, _orig: { front, back, tags: [...tagList], deck: deckName, did: did ? String(did) : '1' } });
+    }
+  }
+  db.close();
+}
 
-        async function loadApkgFile(file) {
-            try {
-                document.getElementById('fileInput').disabled = true;
-                const loadBtn = document.querySelector('button[onclick="loadFile()"]');
-                const loadingIndicator = document.getElementById('loadingIndicator');
-                
-                loadBtn.textContent = 'Loading...';
-                loadBtn.disabled = true;
-                loadingIndicator.style.display = 'block';
+// ═══════════════════════════════════════════════════════════════
+//  TAG TREE
+// ═══════════════════════════════════════════════════════════════
+function buildTagTree() {
+  const deckCounts = {}, tagCounts = {};
+  for (const c of allCards) {
+    if (deletedNids.has(c.nid)) continue;
+    deckCounts[c.deck] = (deckCounts[c.deck] || 0) + 1;
+    for (const t of c.tags) tagCounts[t] = (tagCounts[t] || 0) + 1;
+  }
 
-                const arrayBuffer = await file.arrayBuffer();
-                const zip = await JSZip.loadAsync(arrayBuffer);
-                
-                // Initialize SQL.js
-                const SQL = await initSqlJs({
-                    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-                });
+  const tree = document.getElementById('tag-tree');
+  tree.innerHTML = '';
 
-                // Extract media files
-                mediaFiles = {};
-                for (const [filename, zipEntry] of Object.entries(zip.files)) {
-                    if (!zipEntry.dir && filename !== 'collection.anki2') {
-                        const blob = await zipEntry.async('blob');
-                        mediaFiles[filename] = URL.createObjectURL(blob);
-                    }
-                }
+  // All
+  tree.appendChild(mkLeaf('All Cards', allCards.filter(c => !deletedNids.has(c.nid)).length, null, true));
 
-                // Read the database
-                const dbFile = zip.files['collection.anki2'];
-                if (!dbFile) {
-                    throw new Error('No collection.anki2 found in .apkg file');
-                }
+  // Decks
+  const deckEntries = Object.entries(deckCounts).sort(([a],[b]) => a.localeCompare(b));
+  if (deckEntries.length) {
+    const lbl = el('div', 'sb-section-label', 'Decks'); tree.appendChild(lbl);
+    for (const [dk, cnt] of deckEntries) tree.appendChild(mkLeaf('🗂 ' + dk, cnt, '__deck__' + dk));
+  }
 
-                const dbArrayBuffer = await dbFile.async('arraybuffer');
-                const db = new SQL.Database(new Uint8Array(dbArrayBuffer));
+  // Tags (nested)
+  const tagEntries = Object.entries(tagCounts);
+  if (tagEntries.length) {
+    const lbl = el('div', 'sb-section-label', 'Tags'); tree.appendChild(lbl);
+    renderTreeNodes(buildNestedTree(tagCounts), tree, 0);
+  }
+}
 
-                parseApkgCards(db);
-                
-            } catch (error) {
-                console.error('Error loading .apkg file:', error);
-                alert('Error loading .apkg file: ' + error.message);
-            } finally {
-                document.getElementById('fileInput').disabled = false;
-                const loadBtn = document.querySelector('button[onclick="loadFile()"]');
-                const loadingIndicator = document.getElementById('loadingIndicator');
-                
-                loadBtn.textContent = 'Load Cards';
-                loadBtn.disabled = false;
-                loadingIndicator.style.display = 'none';
-            }
-        }
+function buildNestedTree(counts) {
+  const t = {};
+  for (const [tag, count] of Object.entries(counts)) {
+    const parts = tag.split('::');
+    let node = t;
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      if (!node[p]) node[p] = { _c: 0, _ft: parts.slice(0, i+1).join('::'), _ch: {} };
+      node[p]._c += count;
+      node = node[p]._ch;
+    }
+  }
+  return t;
+}
 
-        function parseTextCards(content) {
-            const lines = content.split('\n').filter(line => line.trim());
-            cards = [];
+function renderTreeNodes(tree, parent, depth) {
+  for (const [name, node] of Object.entries(tree).sort(([a],[b]) => a.localeCompare(b))) {
+    const hasKids = Object.keys(node._ch).length > 0;
+    const wrap = el('div', 't-item');
+    if (depth > 0) wrap.style.paddingLeft = (depth * 10) + 'px';
 
-            for (let line of lines) {
-                const parts = line.split('\t');
-                if (parts.length >= 2) {
-                    cards.push({
-                        front: parts[0].trim(),
-                        back: parts[1].trim()
-                    });
-                }
-            }
+    const row = el('div', 't-row');
+    row.dataset.tag = node._ft;
 
-            if (cards.length === 0) {
-                alert('No valid cards found. Make sure your file is tab-separated with Front[TAB]Back format.');
-                return;
-            }
+    if (hasKids) {
+      row.insertAdjacentHTML('beforeend', `<svg class="t-arrow" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+    } else {
+      row.appendChild(el('div', 't-dot'));
+    }
 
-            initializeApp();
-        }
+    const nm = el('span', 't-name', name); row.appendChild(nm);
+    const ct = el('span', 't-count', node._c); row.appendChild(ct);
 
-        function parseApkgCards(db) {
-            try {
-                cards = [];
-                
-                // First, let's see what tables exist
-                const tablesStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table';");
-                const tables = [];
-                while (tablesStmt.step()) {
-                    tables.push(tablesStmt.getAsObject().name);
-                }
-                tablesStmt.free();
-                console.log('Available tables:', tables);
-                
-                // Simple approach: get notes directly
-                const notesStmt = db.prepare('SELECT flds FROM notes ORDER BY id');
-                
-                while (notesStmt.step()) {
-                    const row = notesStmt.getAsObject();
-                    const fields = row.flds;
-                    
-                    if (fields) {
-                        const fieldArray = fields.split('\x1f'); // Anki uses \x1f as field separator
-                        
-                        if (fieldArray.length >= 2) {
-                            cards.push({
-                                front: fieldArray[0] || '',
-                                back: fieldArray[1] || ''
-                            });
-                        } else if (fieldArray.length === 1 && fieldArray[0].trim()) {
-                            // Single field - use as front, empty back
-                            cards.push({
-                                front: fieldArray[0] || '',
-                                back: '(No back content)'
-                            });
-                        }
-                    }
-                }
-                
-                notesStmt.free();
-                
-                // If no cards found, try alternative approach
-                if (cards.length === 0) {
-                    console.log('No notes found, trying cards table...');
-                    
-                    // Try getting cards and joining with notes
-                    try {
-                        const cardsStmt = db.prepare(`
-                            SELECT DISTINCT n.flds 
-                            FROM cards c 
-                            JOIN notes n ON c.nid = n.id 
-                            ORDER BY c.id
-                        `);
-                        
-                        while (cardsStmt.step()) {
-                            const row = cardsStmt.getAsObject();
-                            const fields = row.flds;
-                            
-                            if (fields) {
-                                const fieldArray = fields.split('\x1f');
-                                
-                                if (fieldArray.length >= 2) {
-                                    cards.push({
-                                        front: fieldArray[0] || '',
-                                        back: fieldArray[1] || ''
-                                    });
-                                }
-                            }
-                        }
-                        
-                        cardsStmt.free();
-                    } catch (e) {
-                        console.error('Cards table approach failed:', e);
-                    }
-                }
-                
-                db.close();
+    let kidsEl = null;
+    if (hasKids) {
+      kidsEl = el('div', 't-children hidden');
+      renderTreeNodes(node._ch, kidsEl, 0);
+    }
 
-                if (cards.length === 0) {
-                    alert('No cards found in the .apkg file. The file might be empty or use an unsupported format.');
-                    return;
-                }
+    row.onclick = e => {
+      e.stopPropagation();
+      if (hasKids) { row.classList.toggle('open'); kidsEl.classList.toggle('hidden'); }
+      setActiveTag(node._ft, row);
+    };
+    wrap.appendChild(row);
+    if (kidsEl) wrap.appendChild(kidsEl);
+    parent.appendChild(wrap);
+  }
+}
 
-                console.log(`Successfully loaded ${cards.length} cards from .apkg file`);
-                initializeApp();
-                
-            } catch (error) {
-                console.error('Error parsing .apkg cards:', error);
-                alert('Error parsing cards from .apkg file: ' + error.message + '\n\nTry exporting your deck as a .txt file instead.');
-            }
-        }
+function mkLeaf(label, count, tag, isAll = false) {
+  const row = el('div', 'ti' + (isAll ? ' active' : ''));
+  row.dataset.tag = tag || '';
+  row.appendChild(el('div', 't-dot'));
+  const nm = el('span', 't-name', label); row.appendChild(nm);
+  const ct = el('span', 't-count', count); row.appendChild(ct);
+  row.onclick = () => setActiveTag(tag, row);
+  return row;
+}
 
-        function initializeApp() {
-            document.body.classList.add('cards-loaded');
-            document.getElementById('fileUpload').classList.add('hidden');
-            document.getElementById('controls').classList.remove('hidden');
-            document.getElementById('progressContainer').classList.remove('hidden');
-            document.getElementById('cardContainer').classList.remove('hidden');
+function setActiveTag(tag, rowEl) {
+  document.querySelectorAll('.t-row.active, .ti.active').forEach(r => r.classList.remove('active'));
+  rowEl.classList.add('active');
+  activeTag = tag;
+  applyFilters();
+}
 
-            // Apply randomization if selected
-            if (document.getElementById('randomize').checked) {
-                shuffleCards();
-                console.log('Cards shuffled!');
-            }
+function collapseAllTags() {
+  document.querySelectorAll('.t-row.open').forEach(r => r.classList.remove('open'));
+  document.querySelectorAll('.t-children').forEach(c => c.classList.add('hidden'));
+}
 
-            currentCardIndex = 0;
-            showCard();
-            updateProgress();
-        }
+function filterTagTree(q) {
+  document.querySelectorAll('#tag-tree .t-item, #tag-tree .t-row, #tag-tree .ti').forEach(el => {
+    if (!q) { el.style.display = ''; return; }
+    const name = el.dataset.tag || el.querySelector('.t-name')?.textContent || '';
+    el.style.display = name.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
 
-        function shuffleCards() {
-            // Fisher-Yates shuffle algorithm
-            for (let i = cards.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [cards[i], cards[j]] = [cards[j], cards[i]];
-            }
-            console.log('Shuffled order for first 5 cards:', cards.slice(0, 5).map(c => c.front.substring(0, 20) + '...'));
-        }
+// ═══════════════════════════════════════════════════════════════
+//  FILTERING
+// ═══════════════════════════════════════════════════════════════
+function applyFilters() {
+  filtered = allCards.filter((c, i) => {
+    if (deletedNids.has(c.nid)) return false;
+    if (activeTag) {
+      if (activeTag.startsWith('__deck__')) {
+        if (c.deck !== activeTag.replace('__deck__', '')) return false;
+      } else {
+        if (!c.tags.some(t => t === activeTag || t.startsWith(activeTag + '::'))) return false;
+      }
+    }
+    if (searchQuery) {
+      const hay = strip(c.front + ' ' + c.back + ' ' + c.tags.join(' ') + ' ' + c.deck).toLowerCase();
+      if (!hay.includes(searchQuery)) return false;
+    }
+    c._filteredIdx = i; // stash original index
+    return true;
+  });
 
-        function shuffleNow() {
-            if (cards.length === 0) {
-                alert('Please load cards first!');
-                return;
-            }
-            
-            stopAutoMode();
-            shuffleCards();
-            currentCardIndex = 0;
-            showCard();
-            updateProgress();
-            
-            // Visual feedback
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '✓ Shuffled!';
-            btn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
-            
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.style.background = '';
-            }, 1500);
-        }
+  const b = document.getElementById('count-badge');
+  b.textContent = filtered.length + ' card' + (filtered.length !== 1 ? 's' : '');
 
-        function showCard() {
-            if (cards.length === 0) return;
+  renderListHeader();
+  initVirtualScroll();
+}
 
-            showingBack = false;
-            const card = cards[currentCardIndex];
-            const cardContent = document.getElementById('cardContent');
-            const cardInfo = document.getElementById('cardInfo');
-            const showBtn = document.getElementById('showBtn');
+// ═══════════════════════════════════════════════════════════════
+//  LIST HEADER
+// ═══════════════════════════════════════════════════════════════
+function renderListHeader() {
+  const h = document.getElementById('list-header');
+  h.innerHTML = '';
 
-            cardInfo.textContent = `Card ${currentCardIndex + 1} of ${cards.length}`;
-            cardContent.innerHTML = processContent(card.front);
-            showBtn.textContent = 'Show Answer';
-            showBtn.disabled = false;
+  const selWrap = el('label', 'select-all-wrap');
+  const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'select-all-cb';
+  cb.onchange = () => { if (cb.checked) selectAll(); else clearSelection(); };
+  selWrap.appendChild(cb);
+  selWrap.appendChild(document.createTextNode('Select all'));
+  h.appendChild(selWrap);
 
-            updateProgress();
+  if (activeTag) {
+    const chip = el('div', 'filter-chip');
+    const label = activeTag.startsWith('__deck__') ? '🗂 ' + activeTag.replace('__deck__', '') : '🏷 ' + activeTag;
+    chip.innerHTML = label + ' <span class="chip-x">×</span>';
+    chip.querySelector('.chip-x').onclick = () => {
+      activeTag = null;
+      document.querySelectorAll('.t-row.active, .ti.active').forEach(r => r.classList.remove('active'));
+      const all = document.querySelector('.ti[data-tag=""]'); if (all) all.classList.add('active');
+      applyFilters();
+    };
+    h.appendChild(chip);
+  }
 
-            if (!autoMode) {
-                speak(card.front);
-            }
-        }
+  const sp = el('div', 'header-space'); h.appendChild(sp);
 
-        function showAnswer() {
-            if (showingBack || cards.length === 0) return;
+  const lbl = el('span', 'header-label');
+  lbl.textContent = searchQuery ? `"${searchQuery}" — ${filtered.length} results` : `${filtered.length} cards`;
+  h.appendChild(lbl);
+}
 
-            showingBack = true;
-            const card = cards[currentCardIndex];
-            const cardContent = document.getElementById('cardContent');
-            const showBtn = document.getElementById('showBtn');
+// ═══════════════════════════════════════════════════════════════
+//  VIRTUAL SCROLL
+// ═══════════════════════════════════════════════════════════════
+function initVirtualScroll() {
+  vsOffset = 0;
+  const spacer = document.getElementById('scroll-spacer');
+  spacer.style.height = (filtered.length * ROW_H + 16) + 'px';
+  document.getElementById('scroll-container').scrollTop = 0;
+  vsRenderedStart = -1; vsRenderedEnd = -1;
+  renderVisibleCards();
+}
 
-            cardContent.innerHTML = processContent(card.back);
-            showBtn.textContent = 'Next Card';
-            showBtn.onclick = nextCard;
+function onScroll() {
+  renderVisibleCards();
+}
 
-            speak(card.back);
-        }
+function renderVisibleCards() {
+  const container = document.getElementById('scroll-container');
+  const viewport  = document.getElementById('cards-viewport');
+  const scrollTop = container.scrollTop;
+  const viewH     = container.clientHeight;
 
-        function processContent(content) {
-            // Handle Anki media references
-            content = content.replace(/\[sound:(.*?)\]/g, (match, filename) => {
-                const mediaUrl = mediaFiles[filename];
-                return mediaUrl ? `<audio controls><source src="${mediaUrl}"></audio>` : match;
-            });
-            
-            // Handle image references
-            content = content.replace(/<img[^>]*src="([^"]*)"[^>]*>/g, (match, filename) => {
-                const mediaUrl = mediaFiles[filename];
-                return mediaUrl ? match.replace(filename, mediaUrl) : match;
-            });
-            
-            // Handle direct media references
-            Object.keys(mediaFiles).forEach(filename => {
-                const regex = new RegExp(`\\b${filename}\\b`, 'g');
-                content = content.replace(regex, mediaFiles[filename]);
-            });
-            
-            // Clean up any remaining Anki formatting
-            content = content.replace(/\{\{c\d+::(.*?)\}\}/g, '$1'); // Cloze deletions
-            content = content.replace(/\{\{(.*?)\}\}/g, '$1'); // Template fields
-            
-            return content;
-        }
+  const start = Math.max(0, Math.floor(scrollTop / ROW_H) - VS_BUFFER);
+  const end   = Math.min(filtered.length, Math.ceil((scrollTop + viewH) / ROW_H) + VS_BUFFER);
 
-        function speak(text) {
-            stopSpeech();
-            
-            // Clean up HTML and entities for speech
-            let cleanText = text;
-            
-            // Remove HTML tags
-            cleanText = cleanText.replace(/<[^>]*>/g, ' ');
-            
-            // Convert HTML entities to readable text
-            cleanText = cleanText.replace(/&nbsp;/gi, ' ');
-            cleanText = cleanText.replace(/&amp;/gi, 'and');
-            cleanText = cleanText.replace(/&lt;/gi, 'less than');
-            cleanText = cleanText.replace(/&gt;/gi, 'greater than');
-            cleanText = cleanText.replace(/&quot;/gi, '"');
-            cleanText = cleanText.replace(/&#39;/gi, "'");
-            cleanText = cleanText.replace(/&apos;/gi, "'");
-            cleanText = cleanText.replace(/&mdash;/gi, ' - ');
-            cleanText = cleanText.replace(/&ndash;/gi, ' - ');
-            cleanText = cleanText.replace(/&hellip;/gi, '...');
-            cleanText = cleanText.replace(/&copy;/gi, 'copyright');
-            cleanText = cleanText.replace(/&reg;/gi, 'registered');
-            cleanText = cleanText.replace(/&trade;/gi, 'trademark');
-            
-            // Remove any remaining HTML entities (&#123; or &something;)
-            cleanText = cleanText.replace(/&#\d+;/g, ' ');
-            cleanText = cleanText.replace(/&[a-zA-Z]+;/g, ' ');
-            
-            // Clean up extra whitespace
-            cleanText = cleanText.replace(/\s+/g, ' ').trim();
-            
-            // Remove Anki-specific formatting that shouldn't be spoken
-            cleanText = cleanText.replace(/\[\[.*?\]\]/g, ''); // Remove [[brackets]]
-            cleanText = cleanText.replace(/\{\{.*?\}\}/g, ''); // Remove {{brackets}}
-            cleanText = cleanText.replace(/\[sound:.*?\]/g, ''); // Remove [sound:...] references
-            
-            if (cleanText.trim()) {
-                currentUtterance = new SpeechSynthesisUtterance(cleanText);
-                currentUtterance.rate = parseFloat(document.getElementById('speechRate').value);
-                
-                document.getElementById('cardContent').classList.add('speaking');
-                
-                currentUtterance.onend = function() {
-                    document.getElementById('cardContent').classList.remove('speaking');
-                };
-                
-                currentUtterance.onerror = function(event) {
-                    console.error('Speech synthesis error:', event);
-                    document.getElementById('cardContent').classList.remove('speaking');
-                };
-                
-                speechSynthesis.speak(currentUtterance);
-            }
-        }
+  if (start === vsRenderedStart && end === vsRenderedEnd) return;
+  vsRenderedStart = start; vsRenderedEnd = end;
 
-        function stopSpeech() {
-            speechSynthesis.cancel();
-            document.getElementById('cardContent').classList.remove('speaking');
-            currentUtterance = null;
-        }
+  viewport.style.top = (start * ROW_H + 8) + 'px';
+  viewport.innerHTML = '';
 
-        function nextCard() {
-            if (cards.length === 0) return;
+  const frag = document.createDocumentFragment();
+  for (let i = start; i < end; i++) {
+    frag.appendChild(makeCardRow(i));
+  }
+  viewport.appendChild(frag);
 
-            stopAutoMode();
-            currentCardIndex = (currentCardIndex + 1) % cards.length;
-            showCard();
+  // Setup lazy image observation
+  setupLazyImages(viewport);
+}
 
-            // Reset show button
-            const showBtn = document.getElementById('showBtn');
-            showBtn.onclick = showAnswer;
-        }
+function makeCardRow(filteredIdx) {
+  const c = filtered[filteredIdx];
+  const origIdx = c._filteredIdx;
 
-        function previousCard() {
-            if (cards.length === 0) return;
+  const row = el('div', 'card-row' + (selectedIds.has(origIdx) ? ' selected' : ''));
+  row.dataset.fi = filteredIdx;
+  row.dataset.oi = origIdx;
 
-            stopAutoMode();
-            currentCardIndex = (currentCardIndex - 1 + cards.length) % cards.length;
-            showCard();
+  // Checkbox
+  const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'card-check';
+  cb.checked = selectedIds.has(origIdx);
+  cb.onclick = e => { e.stopPropagation(); toggleSelect(origIdx, row, cb); };
+  row.appendChild(cb);
 
-            // Reset show button
-            const showBtn = document.getElementById('showBtn');
-            showBtn.onclick = showAnswer;
-        }
+  // Body
+  const body = el('div', 'card-body');
 
-        function toggleAutoMode() {
-            if (autoMode) {
-                stopAutoMode();
-            } else {
-                startAutoMode();
-            }
-        }
+  const front = el('div', 'card-front');
+  front.innerHTML = renderMediaLazy(c.front);
+  body.appendChild(front);
 
-        function startAutoMode() {
-            if (cards.length === 0) return;
+  const meta = el('div', 'card-meta');
+  c.tags.slice(0, 4).forEach(t => {
+    const chip = el('span', 'ctag', t); meta.appendChild(chip);
+  });
+  if (c.tags.length > 4) meta.appendChild(el('span', 'ctag', '+' + (c.tags.length - 4)));
+  meta.appendChild(el('span', 'cdeck', c.deck));
+  body.appendChild(meta);
 
-            autoMode = true;
-            document.getElementById('autoBtn').textContent = '⏹️ Stop Auto';
-            document.getElementById('autoIndicator').style.display = 'block';
-            document.getElementById('showBtn').disabled = true;
+  row.appendChild(body);
 
-            runAutoSequence();
-        }
+  // Action buttons
+  const actions = el('div', 'card-actions');
 
-        function stopAutoMode() {
-            autoMode = false;
-            document.getElementById('autoBtn').textContent = '🔄 Auto Mode';
-            document.getElementById('autoIndicator').style.display = 'none';
-            document.getElementById('showBtn').disabled = false;
+  const editBtn = el('button', 'ca-btn');
+  editBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+  editBtn.title = 'Edit';
+  editBtn.onclick = e => { e.stopPropagation(); openEditModal(origIdx); };
+  actions.appendChild(editBtn);
 
-            if (autoTimer) {
-                clearTimeout(autoTimer);
-                autoTimer = null;
-            }
-            if (countdownTimer) {
-                clearInterval(countdownTimer);
-                countdownTimer = null;
-            }
-        }
+  const delBtn = el('button', 'ca-btn del');
+  delBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`;
+  delBtn.title = 'Delete';
+  delBtn.onclick = e => { e.stopPropagation(); deleteCard(origIdx); };
+  actions.appendChild(delBtn);
 
-        function runAutoSequence() {
-            if (!autoMode || cards.length === 0) return;
+  row.appendChild(actions);
 
-            const card = cards[currentCardIndex];
-            const autoPhase = document.getElementById('autoPhase');
-            
-            // Show and speak front
-            showCard();
-            speak(card.front);
+  // Click row → open card view
+  row.onclick = () => openCardView(filteredIdx);
 
-            // Start countdown for question time
-            autoPhase.textContent = 'Auto Mode Active - Question Time';
-            let timeLeft = parseInt(document.getElementById('pauseTime').value);
-            const timerElement = document.getElementById('timer');
-            
-            countdownTimer = setInterval(() => {
-                timerElement.textContent = timeLeft;
-                timeLeft--;
-                
-                if (timeLeft < 0) {
-                    clearInterval(countdownTimer);
-                    
-                    // Show and speak back
-                    showAnswer();
-                    autoPhase.textContent = 'Auto Mode Active - Answer Time';
-                    
-                    // Wait for answer time before moving to next card
-                    const answerTime = parseInt(document.getElementById('answerTime').value) * 1000;
-                    autoTimer = setTimeout(() => {
-                        if (autoMode) {
-                            nextCard();
-                            if (autoMode) {
-                                runAutoSequence();
-                            }
-                        }
-                    }, answerTime);
-                }
-            }, 1000);
-        }
+  return row;
+}
 
-        function updateProgress() {
-            if (cards.length === 0) return;
+// Lazy image loading
+function renderMediaLazy(html) {
+  if (!html) return '';
+  // Replace img src with data-src and placeholder
+  return html
+    .replace(/<img([^>]*)\ssrc="([^"]+)"([^>]*)>/gi, (_, pre, src, post) => {
+      const resolved = mediaMap[src] || null;
+      if (resolved) return `<img${pre} src="${resolved}"${post}>`;
+      // Use data-src for lazy loading
+      return `<img${pre} data-src="${src}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" class="lazy-img"${post} style="max-height:40px;width:auto;border-radius:4px;vertical-align:middle;opacity:0.4">`;
+    })
+    .replace(/\[sound:[^\]]+\]/g, '');
+}
 
-            const progress = ((currentCardIndex + 1) / cards.length) * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
-        }
+function renderMediaFull(html) {
+  if (!html) return '';
+  return html
+    .replace(/src="([^"]+)"/g, (_, s) => {
+      const resolved = mediaMap[s];
+      if (resolved) return `src="${resolved}"`;
+      return `src="${s}"`;
+    })
+    .replace(/\[sound:[^\]]+\]/g, '');
+}
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (document.getElementById('cardContainer').classList.contains('hidden')) return;
+async function getMedia(filename) {
+  if (mediaMap[filename]) return mediaMap[filename];
+  const zf = mediaZipMap[filename];
+  if (!zf) return null;
+  const mb = await zf.async('arraybuffer');
+  const ext = (filename.split('.').pop() || '').toLowerCase();
+  const mt = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp', svg:'image/svg+xml' }[ext] || 'application/octet-stream';
+  const url = URL.createObjectURL(new Blob([mb], { type: mt }));
+  mediaMap[filename] = url;
+  return url;
+}
 
-            switch(e.code) {
-                case 'Space':
-                    e.preventDefault();
-                    if (!showingBack) {
-                        showAnswer();
-                    } else {
-                        nextCard();
-                    }
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    previousCard();
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    nextCard();
-                    break;
-                case 'KeyA':
-                    e.preventDefault();
-                    toggleAutoMode();
-                    break;
-                case 'KeyS':
-                    e.preventDefault();
-                    stopSpeech();
-                    break;
-            }
+function setupLazyImages(container) {
+  if (!imgObserver) {
+    imgObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const img = entry.target;
+        const src = img.dataset.src;
+        if (!src) return;
+        imgObserver.unobserve(img);
+        getMedia(src).then(url => {
+          if (url) { img.src = url; img.style.opacity = '1'; }
         });
+      });
+    }, { rootMargin: '100px' });
+  }
+  container.querySelectorAll('img.lazy-img').forEach(img => imgObserver.observe(img));
+}
 
-        // Cleanup speech and blob URLs on page unload
-        window.addEventListener('beforeunload', function() {
-            stopSpeech();
-            // Clean up blob URLs to prevent memory leaks
-            Object.values(mediaFiles).forEach(url => URL.revokeObjectURL(url));
-        });
-    </script>
+// ═══════════════════════════════════════════════════════════════
+//  CARD VIEW MODAL
+// ═══════════════════════════════════════════════════════════════
+function openCardView(filteredIdx) {
+  viewingIndex = filteredIdx;
+  showCardInModal();
+  openModal('card-modal');
+}
+
+function showCardInModal() {
+  const c = filtered[viewingIndex];
+  document.getElementById('flip-inner').classList.remove('flipped');
+  document.getElementById('flip-hint').textContent = 'Tap card to reveal answer';
+
+  // Async load full media for front/back
+  (async () => {
+    const front = await resolveAllMedia(c.front);
+    const back  = await resolveAllMedia(c.back);
+    document.getElementById('flip-front').innerHTML = front;
+    document.getElementById('flip-back').innerHTML  = back;
+    document.getElementById('flip-sizer-content').innerHTML = front;
+  })();
+
+  document.getElementById('nav-pos').textContent = (viewingIndex + 1) + ' / ' + filtered.length;
+  document.getElementById('modal-prev').disabled = viewingIndex === 0;
+  document.getElementById('modal-next').disabled = viewingIndex === filtered.length - 1;
+
+  const tagWrap = document.getElementById('card-modal-tags');
+  tagWrap.innerHTML = '';
+  c.tags.forEach(t => tagWrap.appendChild(el('span', 'ctag', t)));
+
+  document.getElementById('card-modal-title').textContent = c.deck;
+}
+
+async function resolveAllMedia(html) {
+  if (!html) return '';
+  const srcs = [];
+  html.replace(/src="([^"]+)"/g, (_, s) => { if (mediaZipMap[s] && !mediaMap[s]) srcs.push(s); });
+  await Promise.all(srcs.map(s => getMedia(s)));
+  return html
+    .replace(/src="([^"]+)"/g, (_, s) => mediaMap[s] ? `src="${mediaMap[s]}"` : `src="${s}"`)
+    .replace(/\[sound:[^\]]+\]/g, '');
+}
+
+function flipCard() {
+  const fi = document.getElementById('flip-inner');
+  fi.classList.toggle('flipped');
+  document.getElementById('flip-hint').textContent = fi.classList.contains('flipped') ? 'Tap to hide answer' : 'Tap to reveal answer';
+}
+
+function navCard(dir) {
+  const n = viewingIndex + dir;
+  if (n < 0 || n >= filtered.length) return;
+  viewingIndex = n; showCardInModal();
+}
+
+function editCurrentCard() {
+  const origIdx = filtered[viewingIndex]._filteredIdx;
+  closeModal('card-modal');
+  openEditModal(origIdx);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EDIT / CREATE MODAL
+// ═══════════════════════════════════════════════════════════════
+function openEditModal(origIdx) {
+  editingIndex = origIdx;
+  const isNew = origIdx === null;
+  document.getElementById('edit-modal-title').textContent = isNew ? 'New Card' : 'Edit Card';
+  document.getElementById('save-card-btn').textContent = isNew ? 'Create Card' : 'Save Card';
+
+  if (isNew) {
+    document.getElementById('edit-front').value = '';
+    document.getElementById('edit-back').value = '';
+    setEditTags([]);
+    populateDeckSelect('edit-deck', Object.values(decksMap)[0] || 'Default');
+  } else {
+    const c = allCards[origIdx];
+    document.getElementById('edit-front').value = strip(c.front);
+    document.getElementById('edit-back').value = strip(c.back);
+    setEditTags([...c.tags]);
+    populateDeckSelect('edit-deck', c.deck);
+  }
+  openModal('edit-modal');
+}
+
+function populateDeckSelect(selectId, currentDeck) {
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = '';
+  const deckNames = [...new Set(Object.values(decksMap))].sort();
+  deckNames.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    if (name === currentDeck) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function saveCard() {
+  const front = document.getElementById('edit-front').value.trim();
+  const back  = document.getElementById('edit-back').value.trim();
+  const tags  = getEditTags();
+  const deck  = document.getElementById('edit-deck').value;
+
+  if (!front) { showToast('Front cannot be empty', 'error'); return; }
+
+  if (editingIndex === null) {
+    // Create new
+    const now = Date.now();
+    const nid = now;
+    const did = Object.keys(decksMap).find(k => decksMap[k] === deck) || '1';
+    allCards.push({ nid, front, back, tags, deck, did, mod: Math.floor(now/1000), _orig: null, _isNew: true });
+    markDirty();
+    showToast('✓ Card created', 'success');
+  } else {
+    const c = allCards[editingIndex];
+    c.front = front; c.back = back; c.tags = tags; c.deck = deck;
+    c.did = Object.keys(decksMap).find(k => decksMap[k] === deck) || c.did;
+    markDirty();
+    showToast('✓ Card saved', 'success');
+  }
+
+  closeModal('edit-modal');
+  buildTagTree();
+  applyFilters();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DELETE
+// ═══════════════════════════════════════════════════════════════
+function deleteCard(origIdx) {
+  const c = allCards[origIdx];
+  if (!c) return;
+  deletedNids.add(c.nid);
+  markDirty();
+  undoStack.push({ type: 'delete', nid: c.nid });
+  buildTagTree(); applyFilters();
+  showToast('Card deleted', 'success', true);
+}
+
+function batchDelete() {
+  if (!selectedIds.size) return;
+  const ids = [...selectedIds];
+  ids.forEach(i => { const c = allCards[i]; if (c) { deletedNids.add(c.nid); undoStack.push({ type:'delete', nid:c.nid }); } });
+  markDirty();
+  clearSelection();
+  buildTagTree(); applyFilters();
+  showToast(`${ids.length} cards deleted`, 'success', true);
+}
+
+function undoLast() {
+  if (!undoStack.length) return;
+  const action = undoStack.pop();
+  if (action.type === 'delete') { deletedNids.delete(action.nid); markDirty(); buildTagTree(); applyFilters(); showToast('Undo successful', 'success'); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SELECTION
+// ═══════════════════════════════════════════════════════════════
+function toggleSelect(origIdx, row, cb) {
+  if (selectedIds.has(origIdx)) { selectedIds.delete(origIdx); row.classList.remove('selected'); cb.checked = false; }
+  else { selectedIds.add(origIdx); row.classList.add('selected'); cb.checked = true; }
+  updateBatchBar();
+}
+
+function selectAll() {
+  filtered.forEach(c => selectedIds.add(c._filteredIdx));
+  renderVisibleCards();
+  updateBatchBar();
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  document.getElementById('select-all-cb') && (document.getElementById('select-all-cb').checked = false);
+  renderVisibleCards();
+  updateBatchBar();
+}
+
+function updateBatchBar() {
+  const bar = document.getElementById('batch-bar');
+  if (selectedIds.size > 0) {
+    bar.classList.add('visible');
+    document.getElementById('batch-count').textContent = selectedIds.size + ' selected';
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BATCH TAG MODAL
+// ═══════════════════════════════════════════════════════════════
+let batchTagsList = [];
+function openBatchTagModal() {
+  batchTagsList = [];
+  setBatchTags([]);
+  setBatchMode('add');
+  document.getElementById('batch-apply-count').textContent = selectedIds.size;
+  document.getElementById('batch-info').textContent = '';
+  openModal('batch-modal');
+}
+
+function setBatchMode(mode) {
+  batchTagMode = mode;
+  ['add','remove','replace'].forEach(m => document.getElementById('mode-' + m).classList.toggle('active', m === mode));
+  document.getElementById('batch-tag-label').textContent = mode === 'add' ? 'Tags to Add' : mode === 'remove' ? 'Tags to Remove' : 'Replace All Tags With';
+}
+
+function applyBatchTags() {
+  const tags = getBatchTags();
+  if (!tags.length && batchTagMode !== 'replace') { showToast('Add at least one tag', 'error'); return; }
+  let count = 0;
+  selectedIds.forEach(i => {
+    const c = allCards[i];
+    if (!c) return;
+    if (batchTagMode === 'add') c.tags = [...new Set([...c.tags, ...tags])];
+    else if (batchTagMode === 'remove') c.tags = c.tags.filter(t => !tags.includes(t));
+    else if (batchTagMode === 'replace') c.tags = [...tags];
+    count++;
+  });
+  markDirty();
+  buildTagTree(); applyFilters();
+  closeModal('batch-modal');
+  showToast(`✓ Tags updated on ${count} cards`, 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BATCH DECK MODAL
+// ═══════════════════════════════════════════════════════════════
+function openBatchDeckModal() {
+  populateDeckSelect('batch-deck-select', Object.values(decksMap)[0] || 'Default');
+  document.getElementById('batch-deck-count').textContent = selectedIds.size;
+  openModal('batch-deck-modal');
+}
+
+function applyBatchDeck() {
+  const deck = document.getElementById('batch-deck-select').value;
+  const did  = Object.keys(decksMap).find(k => decksMap[k] === deck) || '1';
+  let count = 0;
+  selectedIds.forEach(i => {
+    const c = allCards[i];
+    if (!c) return;
+    c.deck = deck; c.did = did; count++;
+  });
+  markDirty();
+  buildTagTree(); applyFilters();
+  closeModal('batch-deck-modal');
+  showToast(`✓ Moved ${count} cards to "${deck}"`, 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TAG INPUT WIDGET
+// ═══════════════════════════════════════════════════════════════
+function setupTagInput(inputId, editorId, getter, setter) {
+  const input = document.getElementById(inputId);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const val = input.value.trim();
+      if (val) {
+        const tags = getter();
+        if (!tags.includes(val)) setter([...tags, val]);
+        input.value = '';
+      }
+    } else if (e.key === 'Backspace' && !input.value) {
+      const tags = getter();
+      if (tags.length) setter(tags.slice(0, -1));
+    }
+  });
+  input.addEventListener('blur', () => {
+    const val = input.value.trim();
+    if (val) {
+      const tags = getter();
+      if (!tags.includes(val)) setter([...tags, val]);
+      input.value = '';
+    }
+  });
+}
+
+function getEditTags() {
+  return [...document.getElementById('edit-tags-editor').querySelectorAll('.tag-chip')]
+    .map(c => c.dataset.tag);
+}
+function setEditTags(tags) { renderTagChips('edit-tags-editor', 'tag-input-inline', tags, setEditTags); }
+
+function getBatchTags() {
+  return [...document.getElementById('batch-tags-editor').querySelectorAll('.tag-chip')]
+    .map(c => c.dataset.tag);
+}
+function setBatchTags(tags) { renderTagChips('batch-tags-editor', 'batch-tag-input', tags, setBatchTags); }
+
+function renderTagChips(editorId, inputId, tags, setter) {
+  const editor = document.getElementById(editorId);
+  const input  = document.getElementById(inputId);
+  editor.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  tags.forEach(tag => {
+    const chip = el('div', 'tag-chip');
+    chip.dataset.tag = tag;
+    chip.innerHTML = tag + ' <span class="remove-tag">×</span>';
+    chip.querySelector('.remove-tag').onclick = () => setter(tags.filter(t => t !== tag));
+    editor.insertBefore(chip, input);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EXPORT .APKG
+// ═══════════════════════════════════════════════════════════════
+async function exportApkg() {
+  showToast('Building export…');
+  await tick();
+
+  try {
+    // Rebuild DB
+    const db = new SQL.Database(new Uint8Array(dbBytes));
+
+    // Get col columns
+    const colCols = db.exec(`PRAGMA table_info(notes)`)[0].values.map(r => r[1]);
+    const fldsI = colCols.indexOf('flds');
+    const tagsI = colCols.indexOf('tags');
+    const idI   = colCols.indexOf('id');
+
+    // Apply edits
+    for (const c of allCards) {
+      if (c._isNew) {
+        // Insert new note
+        try {
+          const now = Date.now();
+          const flds = c.front + '\x1f' + c.back;
+          const tags = c.tags.join(' ');
+          db.run(`INSERT INTO notes (id, guid, mid, mod, usn, tags, flds, sfld, csum, flags, data) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+            [c.nid, c.nid.toString(36), 1, Math.floor(now/1000), -1, ' ' + tags + ' ', flds, c.front, 0, 0, '']);
+          // Also insert a card
+          db.run(`INSERT INTO cards (id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            [c.nid + 1, c.nid, parseInt(c.did) || 1, 0, Math.floor(now/1000), -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '']);
+        } catch(e) { console.warn('Could not insert new card:', e); }
+      } else if (deletedNids.has(c.nid)) {
+        try { db.run(`DELETE FROM notes WHERE id = ?`, [c.nid]); db.run(`DELETE FROM cards WHERE nid = ?`, [c.nid]); } catch(e) {}
+      } else {
+        // Check if changed
+        const orig = c._orig;
+        if (!orig) continue;
+        const changed = c.front !== orig.front || c.back !== orig.back || JSON.stringify(c.tags) !== JSON.stringify(orig.tags) || c.did !== orig.did;
+        if (!changed) continue;
+        try {
+          const flds = c.front + '\x1f' + c.back;
+          const tags = ' ' + c.tags.join(' ') + ' ';
+          db.run(`UPDATE notes SET flds=?, tags=?, mod=? WHERE id=?`, [flds, tags, Math.floor(Date.now()/1000), c.nid]);
+          if (c.did !== orig.did) db.run(`UPDATE cards SET did=? WHERE nid=?`, [parseInt(c.did) || 1, c.nid]);
+        } catch(e) { console.warn('Could not update card:', e); }
+      }
+    }
+
+    const exportedDb = db.export();
+    db.close();
+
+    // Rebuild zip
+    const newZip = new JSZip();
+    // Copy all original files except the db
+    const dbFileName = originalZip.file('collection.anki21') ? 'collection.anki21' :
+                       originalZip.file('collection.anki2')  ? 'collection.anki2' : 'collection.anki21';
+    for (const [name, zf] of Object.entries(originalZip.files)) {
+      if (zf.dir) continue;
+      if (name === 'collection.anki21' || name === 'collection.anki2' || name === 'collection.anki21b') continue;
+      newZip.file(name, await zf.async('arraybuffer'));
+    }
+    newZip.file(dbFileName, exportedDb);
+
+    const blob = await newZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'exported_' + Date.now() + '.apkg';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    markDirty(false);
+    showToast('✓ Exported successfully!', 'success');
+  } catch(err) {
+    console.error(err);
+    showToast('Export failed: ' + err.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+});
+
+document.addEventListener('keydown', e => {
+  // Card view keyboard nav
+  const cm = document.getElementById('card-modal');
+  if (cm.classList.contains('open')) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navCard(1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navCard(-1);
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+    else if (e.key === 'e') editCurrentCard();
+    else if (e.key === 'Escape') closeModal('card-modal');
+  } else if (document.querySelector('.modal-overlay.open')) {
+    if (e.key === 'Escape') document.querySelector('.modal-overlay.open').classList.remove('open');
+  }
+  if (e.key === 'z' && (e.ctrlKey || e.metaKey)) undoLast();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type = '', showUndo = false) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  t.className = 'toast' + (type ? ' ' + type : '') + (showUndo ? '' : '');
+  t.innerHTML = msg + (showUndo ? ' <span class="toast-undo" onclick="undoLast()">Undo</span>' : '');
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), showUndo ? 5000 : 2500);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  VIEW HELPERS
+// ═══════════════════════════════════════════════════════════════
+function setView(v) {
+  document.getElementById('dropzone').style.display  = v === 'drop'    ? 'flex' : 'none';
+  document.getElementById('loading').style.display   = v === 'loading' ? 'flex' : 'none';
+  document.getElementById('list-view').style.display = v === 'list'    ? 'flex' : 'none';
+}
+function setLt(t) { document.getElementById('loading-text').textContent = t; }
+function tick() { return new Promise(r => setTimeout(r, 20)); }
+
+function markDirty(dirty = true) {
+  isDirty = dirty;
+  document.getElementById('dirty-dot').style.display = dirty ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════════
+function el(tag, cls = '', text = '') {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== '') e.textContent = text;
+  return e;
+}
+function strip(h) {
+  const d = document.createElement('div'); d.innerHTML = h; return d.textContent || '';
+}
+</script>
 </body>
 </html>
